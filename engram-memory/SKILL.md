@@ -58,12 +58,6 @@ Relations: `caused_by`, `leads_to`, `part_of`, `related_to`, `contradicts`, `rei
 - Cron (3:30 AM) feeds nightly
 - To fully revert: remove the skill directory AND `memory/graph.json` from the workspace root
 
-The graph file should be added to your workspace `.stignore` to avoid Syncthing conflicts:
-```
-# Engram memory graph (auto-generated, not synced)
-memory/graph.json
-```
-
 ## Installation & Configuration
 
 This skill requires the `@bottensor/engram` package:
