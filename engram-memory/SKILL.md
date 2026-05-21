@@ -77,6 +77,8 @@ Change `storageDir` to point wherever you want the graph to persist:
 | Path | Resolves to |
 |---|---|
 | `join(__dirname, '../../memory')` | `workspace/memory/graph.json` |
-| `__dirname` | `skills/engram-memory/graph.json` |
+| `__dirname` | `skills/engram-memory/graph.json` ⚠️ in git tree! |
 | `join(__dirname, '../..')` | `workspace/graph.json` |
+
+**Note:** Storing the graph inside the git repo will commit personal data. Add `graph.json` to `.gitignore` if using `__dirname`. The default path (`memory/`) is outside the repo and requires no ignore rule.
 
