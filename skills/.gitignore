@@ -1,0 +1,14 @@
+# PII-protected skills (not ready for public)
+alight-yoga-booking/
+amc-movie-booking/
+email-triage/
+great-clips/
+health-connect-db/
+goplaces.bak/
+
+# Engram memory data (contains personal info)
+engram-memory/graph.json
+
+# Backup files
+*.bak
+*/*.bak
