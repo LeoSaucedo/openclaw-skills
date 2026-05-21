@@ -51,7 +51,7 @@ def api_get(path_or_url, max_pages=1):
     while url and page < max_pages:
         req = urllib.request.Request(url, headers=headers)
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 body = json.loads(resp.read())
         except urllib.error.HTTPError as e:
             return {"error": f"API HTTP {e.code}: {e.reason}"}
@@ -75,10 +75,13 @@ def api_get(path_or_url, max_pages=1):
 
 
 def check_err(data):
-    """If data is an error dict, print it and return True."""
-    if isinstance(data, dict) and "error" in data:
-        print(f"❌ {data['error']}")
-        return True
+    """If data is an error dict, print it and return True. Also prints warnings."""
+    if isinstance(data, dict):
+        if "error" in data:
+            print(f"❌ {data['error']}")
+            return True
+        if "warning" in data:
+            print(f"⚠️ {data['warning']}")
     return False
 
 
@@ -251,8 +254,6 @@ def cmd_assignments(stage=None):
     data = api_get("/assignments?per_page=500", 100)
     if check_err(data):
         return
-    if "warning" in data:
-        print(f"⚠️ {data['warning']}")
     stages = {}
     for item in data.get("data", []):
         srs = item.get("data", {}).get("srs_stage", -1)

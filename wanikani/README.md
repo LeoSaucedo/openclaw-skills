@@ -32,7 +32,7 @@ python3 scripts/wanikani.py leeches
 |---|---|
 | `user` | Profile info |
 | `summary` | Review forecast |
-| `subjects <char\|keyword>` | Look up kanji/vocab/radical |
+| `subjects <char|keyword>` | Look up kanji/vocab/radical |
 | `subjects --level <N>` | List subjects at a level |
 | `assignments` | SRS stage distribution |
 | `assignments <stage>` | Filter by SRS stage |

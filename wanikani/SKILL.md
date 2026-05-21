@@ -33,7 +33,7 @@ python3 scripts/wanikani.py <command> [args]
 |---|---|
 | `user` | Profile info (level, username, plan) |
 | `summary` | Today's review forecast + lessons available |
-| `subjects <char\|keyword>` | Look up kanji, vocab, or radical by character or meaning |
+| `subjects <char|keyword>` | Look up kanji, vocab, or radical by character or meaning |
 | `subjects --level <N>` | List all subjects at a level |
 | `assignments` | SRS stage distribution |
 | `assignments <stage>` | Items in a specific SRS stage (locked/apprentice/guru/master/enlightened/burned or 0-9) |
