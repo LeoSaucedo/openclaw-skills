@@ -1,6 +1,8 @@
 ---
 name: lastfm
 description: Interact with the Last.fm API for scrobble stats, music profiles, top charts, and discovery. Use when the user asks about their Last.fm stats, what someone is listening to, top artists/tracks/albums, now playing status, profile info, loved tracks, artist/track/album details, search Last.fm, or compare music taste with another user. Requires LASTFM_API_KEY environment variable.
+metadata:
+  author: github.com/LeoSaucedo
 ---
 
 # Last.fm API Skill

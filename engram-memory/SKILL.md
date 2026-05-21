@@ -1,6 +1,8 @@
 ---
 name: engram-memory
 description: Graph-based agent memory for tracing relationships between facts. Use when memory_search returns isolated facts and you need to see how they connect — causal chains, hierarchies, related events. LTM-only, stored as JSON graph with typed nodes and weighted edges.
+metadata:
+  author: github.com/LeoSaucedo
 ---
 
 # Engram — Graph-Based Agent Memory

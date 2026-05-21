@@ -1,6 +1,8 @@
 ---
 name: soundcloud
 description: Interact with SoundCloud API for searching tracks, managing playlists, user operations, and audio discovery. Use when the user asks to search for music on SoundCloud, create/edit playlists, get track information, find user profiles, manage favorites, or work with SoundCloud audio content. Requires SOUNDCLOUD_CLIENT_ID and SOUNDCLOUD_CLIENT_SECRET for all operations; SOUNDCLOUD_USER_TOKEN for write operations (playlists, likes, follows).
+metadata:
+  author: github.com/LeoSaucedo
 ---
 
 # SoundCloud API Skill
