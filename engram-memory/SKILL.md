@@ -26,11 +26,16 @@ Types: `episodic` (events), `semantic` (facts/prefs), `entity` (people), `goal` 
 node skills/engram-memory/engram-memory.mjs search "query"
 ```
 
-### Context injection
+### Decay
 
 ```bash
-node skills/engram-memory/engram-memory.mjs context "topic"
+node skills/engram-memory/engram-memory.mjs decay
 ```
+Applies decay to LTM nodes based on time since last access and importance score. Nodes dropping below threshold are pruned.
+
+### Dependency
+
+This skill requires the `@bottensor/engram` node package.
 
 ### Link
 

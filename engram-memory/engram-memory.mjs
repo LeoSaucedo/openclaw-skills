@@ -35,6 +35,19 @@ function bail() {
 
 // ── Commands ────────────────────────────────────────────
 
+async function cmdDecay() {
+  try {
+    await memory.load();
+    const removed = await memory.ltm.decay();
+    await memory.save();
+    log(`DECAYED: ${removed.length} nodes removed`);
+    console.log(`Removed: ${removed.length} nodes`);
+  } catch (e) {
+    log(`DECAY FAIL: ${e.message}`);
+    bail();
+  }
+}
+
 async function cmdAdd() {
   const json = process.argv.slice(3).join(' ');
   let data;
@@ -155,6 +168,7 @@ async function cmdStats() {
 (async () => {
   try {
     switch (cmd) {
+      case 'decay': await cmdDecay();   break;
       case 'add':     await cmdAdd();     break;
       case 'batch':   await cmdBatch();   break;
       case 'link':    await cmdLink();    break;
