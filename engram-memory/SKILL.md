@@ -7,7 +7,7 @@ metadata:
 
 # Engram — Graph-Based Agent Memory
 
-`@bottensor/engram` stores typed nodes (events, facts, people, goals, observations) with weighted edges (causal, hierarchical, temporal). Runs as local Node.js via exec. Disk: `.agent/memory/graph.json`. No API keys needed.
+`@bottensor/engram` stores typed nodes (events, facts, people, goals, observations) with weighted edges (causal, hierarchical, temporal). Runs as local Node.js via exec. Disk: `memory/graph.json` (workspace root). No API keys needed.
 
 ## Commands
 
@@ -56,9 +56,13 @@ Relations: `caused_by`, `leads_to`, `part_of`, `related_to`, `contradicts`, `rei
 - Persistent JSON at `memory/graph.json` (workspace root)
 - Auto-loads on first call, explicit `save()` after mutations (wrapper handles this)
 - Cron (3:30 AM) feeds nightly
-- Remove skill dir to fully revert
+- To fully revert: remove the skill directory AND `memory/graph.json` from the workspace root
 
-The data file is excluded from Syncthing via `.stignore`.
+The graph file should be added to your workspace `.stignore` to avoid Syncthing conflicts:
+```
+# Engram memory graph (auto-generated, not synced)
+memory/graph.json
+```
 
 ## Installation & Configuration
 
@@ -82,4 +86,3 @@ Change `storageDir` to point wherever you want the graph to persist:
 | `__dirname` | `skills/engram-memory/graph.json` |
 | `join(__dirname, '../..')` | `workspace/graph.json` |
 
-Stored in `.stignore` to avoid Syncthing conflicts.
