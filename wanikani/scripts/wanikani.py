@@ -64,9 +64,13 @@ def api_get(path_or_url, max_pages=1):
             return body
 
         url = body.get("pages", {}).get("next_url") or ""
+        had_next = bool(url)
         page += 1
 
-    return {"data": all_data, "total_count": len(all_data)}
+    result = {"data": all_data, "total_count": len(all_data)}
+    if had_next:
+        result["warning"] = f"Results truncated after {max_pages} pages (more data available)"
+    return result
 
 
 def check_err(data):
@@ -160,8 +164,13 @@ def cmd_subjects(query=None, level=None):
             slug = d.get("slug", "") or ""
             meanings = [m["meaning"].lower() for m in d.get("meanings", [])]
 
-            # Match by: exact character, slug, or meaning keyword
-            matched = (char == query) or (q in slug.lower()) or (q in meanings) or (q in char.lower())
+            # Match by: exact character, slug, meaning keyword, or substring
+            matched = any([
+                char == query,
+                q in slug.lower(),
+                any(q in m for m in meanings),
+                q in char.lower(),
+            ])
             if not matched:
                 continue
 
@@ -237,10 +246,12 @@ def cmd_assignments(stage=None):
         print(f"Unknown stage: '{stage}'. Valid: locked, apprentice, guru, master, enlightened, burned (or 0-9)")
         return
 
-    # No arg — show distribution
-    data = api_get("/assignments", 10)
+    # No arg — show distribution (paginate fully, up to 100 pages)
+    data = api_get("/assignments?per_page=500", 100)
     if check_err(data):
         return
+    if "warning" in data:
+        print(f"⚠️ {data['warning']}")
     stages = {}
     for item in data.get("data", []):
         srs = item.get("data", {}).get("srs_stage", -1)
