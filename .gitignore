@@ -6,8 +6,8 @@ great-clips/
 health-connect-db/
 goplaces.bak/
 
-# Engram memory data (contains personal info)
-engram-memory/graph.json
+# Engram memory data — stored outside repo at workspace/memory/graph.json
+# (No ignore rule needed — it's outside the git tree entirely)
 
 # Backup files
 *.bak
