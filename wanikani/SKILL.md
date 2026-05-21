@@ -6,9 +6,6 @@ metadata:
     emoji: 🈴
     requires:
       bins:
-        - bash
-        - curl
-        - jq
         - python3
       env:
         - WANIKANI_ACCESS_TOKEN
@@ -27,102 +24,41 @@ https://www.wanikani.com/settings/personal_access_tokens
 
 ## Commands
 
-Run from the skill directory:
-
 ```bash
-scripts/wanikani.sh <command> [args]
+python3 scripts/wanikani.py <command> [args]
 ```
 
-### Profile
+| Command | What it does |
+|---|---|
+| `user` | Profile info (level, username, plan) |
+| `summary` | Today's review forecast + lessons available |
+| `subjects <char\|slug>` | Look up a kanji, vocab, or radical |
+| `subjects --level <N>` | List all subjects at a level |
+| `assignments` | SRS stage distribution |
+| `assignments <stage>` | Items in a specific SRS stage |
+| `reviews [limit]` | Recent review history |
+| `review-stats` | Accuracy statistics |
+| `levels` | Level progression timeline |
+| `leeches` | Subjects below 70% accuracy |
+
+## Examples
 
 ```bash
-scripts/wanikani.sh user
-# 📊 WaniKani Profile — CarlosSaucedo
-# Level: 2
-# Member since: 2025-09-15
-# Plan: free (max level 3)
+# Quick profile check
+python3 scripts/wanikani.py user
+
+# Kanji lookup
+python3 scripts/wanikani.py subjects 水
+
+# Review forecast
+python3 scripts/wanikani.py summary
+
+# Problem areas
+python3 scripts/wanikani.py leeches
 ```
-
-### Review Forecast
-
-```bash
-scripts/wanikani.sh summary
-# 📝 Review Forecast
-# Next review batch: 84 items
-# Available at: May 21, 11:00 AM
-# Lessons available: 40
-```
-
-### Subject Lookup (kanji, vocabulary, radicals)
-
-```bash
-scripts/wanikani.sh subjects 水
-# 水 [kanji] Water
-#   Readings: すい★, みず
-#   Level 2
-
-scripts/wanikani.sh subjects --level 3
-# Lists all subjects at that level
-
-scripts/wanikani.sh subjects river
-# 川 [radical] River
-#   Level 1
-```
-
-### SRS Stage Distribution
-
-```bash
-scripts/wanikani.sh assignments
-# Stage 0: 40 items (locked)
-# Stage 1: 15 items (apprentice)
-# Stage 5: 5 items (guru)
-
-scripts/wanikani.sh assignments apprentice
-# Lists items in apprentice SRS stages
-```
-
-### Review History
-
-```bash
-scripts/wanikani.sh reviews 5
-# Review #12345: Subject 8762 — ✅ SRS 5→6 (2026-05-20)
-```
-
-### Accuracy Statistics
-
-```bash
-scripts/wanikani.sh review-stats
-# 📈 Review Statistics
-# Items with stats: 84
-# Average accuracy: 87%
-# ⚠️ Subject 445: 64% accuracy (10 mistakes)
-```
-
-### Level Progression
-
-```bash
-scripts/wanikani.sh levels
-# Level 1: 2025-09-15 → 2026-02-08 → not completed
-# Level 2: 2026-02-08 → not passed → not completed
-```
-
-### Leeches (struggling subjects)
-
-```bash
-scripts/wanikani.sh leeches
-# 🐛 Subject 468: 25% — 6 mistakes total
-```
-
-## Integration Tips
-
-- Use `wanikani.sh user` for quick check-ins ("how's my Japanese going?")
-- Use `wanikani.sh subjects <kanji>` when Carlos encounters an unfamiliar character
-- Use `wanikani.sh summary` as part of a daily briefing
-- Use `wanikani.sh leeches` to identify problem areas
 
 ## Error Handling
 
-- **No token**: Ensure `WANIKANI_ACCESS_TOKEN` is set
-- **401**: Token may be expired — regenerate at WaniKani settings
-- **Empty results**: Subject may not exist or may require a different spelling
-- **Rate limiting**: 60 requests/min — all commands are conservative
+- **No token**: Ensure `WANIKANI_ACCESS_TOKEN` is set in your environment or `~/.openclaw/.env`
+- **401**: Token expired — regenerate at WaniKani Settings
+- **Rate limiting**: 60 requests per minute
