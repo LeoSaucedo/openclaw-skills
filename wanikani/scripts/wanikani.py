@@ -46,6 +46,7 @@ def api_get(path_or_url, max_pages=1):
 
     all_data = []
     page = 0
+    had_next = False
 
     while url and page < max_pages:
         req = urllib.request.Request(url, headers=headers)
@@ -174,7 +175,7 @@ def cmd_subjects(query=None, level=None):
             if not matched:
                 continue
 
-            key = f"{char}-{item.get('object', '?')}"
+            key = item.get("id") or f"{char}-{item.get('object', '?')}"
             if key in seen:
                 continue
             seen.add(key)
@@ -256,7 +257,6 @@ def cmd_assignments(stage=None):
     for item in data.get("data", []):
         srs = item.get("data", {}).get("srs_stage", -1)
         stages[srs] = stages.get(srs, 0) + 1
-    label_names = {v: k for k, v in SRS_LABELS.items()}
     # Build per-stage labels
     stage_labels = {0: "locked", 1: "apprentice I", 2: "apprentice II", 3: "apprentice III", 4: "apprentice IV",
                     5: "guru I", 6: "guru II", 7: "master", 8: "enlightened", 9: "burned"}

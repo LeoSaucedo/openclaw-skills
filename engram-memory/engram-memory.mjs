@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// storageDir intentionally points outside the repo tree (git root = skills/).
+// storageDir intentionally points outside this repository.
 // ../../memory resolves to workspace/memory/graph.json — alongside other
 // memory files, excluded from version control and Syncthing.
 const memory = new AgenticMemory({ backend: 'local', storageDir: join(__dirname, '../../memory') });
