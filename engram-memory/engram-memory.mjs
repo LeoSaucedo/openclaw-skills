@@ -7,10 +7,14 @@
 import { AgenticMemory } from '@bottensor/engram';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const memory = new AgenticMemory({ backend: 'local', storageDir: __dirname });
+
+// storageDir intentionally points outside the repo tree (git root = skills/).
+// ../../memory resolves to workspace/memory/graph.json — alongside other
+// memory files, excluded from version control and Syncthing.
+const memory = new AgenticMemory({ backend: 'local', storageDir: join(__dirname, '../../memory') });
 const cmd = process.argv[2];
 
 // ── Helpers ────────────────────────────────────────────
