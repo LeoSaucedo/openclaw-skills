@@ -53,7 +53,33 @@ Relations: `caused_by`, `leads_to`, `part_of`, `related_to`, `contradicts`, `rei
 
 ## Data
 
-- Persistent JSON at `skills/engram-memory/.agent/memory/graph.json`
+- Persistent JSON at `memory/graph.json` (workspace root)
 - Auto-loads on first call, explicit `save()` after mutations (wrapper handles this)
 - Cron (3:30 AM) feeds nightly
 - Remove skill dir to fully revert
+
+The data file is excluded from Syncthing via `.stignore`.
+
+## Installation & Configuration
+
+This skill requires the `@bottensor/engram` package:
+
+```bash
+npm install @bottensor/engram
+```
+
+The storage directory is configured in `engram-memory.mjs`:
+
+```js
+const memory = new AgenticMemory({ backend: 'local', storageDir: join(__dirname, '../../memory') });
+```
+
+Change `storageDir` to point wherever you want the graph to persist:
+
+| Path | Resolves to |
+|---|---|
+| `join(__dirname, '../../memory')` | `workspace/memory/graph.json` |
+| `__dirname` | `skills/engram-memory/graph.json` |
+| `join(__dirname, '../..')` | `workspace/graph.json` |
+
+Stored in `.stignore` to avoid Syncthing conflicts.

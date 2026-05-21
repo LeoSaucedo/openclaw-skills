@@ -31,4 +31,12 @@ node skills/engram-memory/engram-memory.mjs decay
 
 ## Data Location
 
-- `skills/engram-memory/.agent/memory/graph.json`
+- `memory/graph.json` (workspace root — configurable via `storageDir` in the wrapper)
+
+## Installation
+
+```bash
+npm install @bottensor/engram
+```
+
+The graph file path is set by the `storageDir` option passed to `AgenticMemory` in `engram-memory.mjs`. Adjust it to match your project layout.
