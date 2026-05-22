@@ -1,6 +1,8 @@
 ---
 name: alpaca-trading
 description: Check Alpaca paper trading account balance, positions, ticker stats, place buy/sell orders, view order history, and close positions. Use when the user asks to view their trading account, check their P&L, place a trade, sell a position, get a stock quote, or manage their Alpaca portfolio.
+metadata:
+  author: github.com/LeoSaucedo
 ---
 
 # Alpaca Trading
