@@ -15,6 +15,7 @@
  */
 
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -22,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function loadEnv() {
   const candidates = [
-    "/home/ada/.openclaw/.env",
+    path.join(os.homedir(), ".openclaw", ".env"),
     path.join(__dirname, "..", "..", "..", "..", "..", ".env"),
     path.join(__dirname, "..", "..", "..", ".env"),
     path.join(__dirname, "..", "..", "alpaca-trading", ".env"),
@@ -46,8 +47,11 @@ function loadEnv() {
   }
 }
 
-async function alpacaRequest(endpoint, method = "GET", body = null) {
-  const base = "https://paper-api.alpaca.markets/v2";
+const TRADING_BASE = "https://paper-api.alpaca.markets/v2";
+const DATA_BASE = "https://data.alpaca.markets/v2";
+
+async function alpacaRequest(endpoint, method = "GET", body = null, dataApi = false) {
+  const base = dataApi ? DATA_BASE : TRADING_BASE;
   const opts = {
     method,
     headers: {
@@ -96,18 +100,18 @@ async function cmdPositions() {
     entry: fmt(p.avg_entry_price),
     current: fmt(p.current_price),
     market_value: fmt(p.market_value),
-    unrealized_pl: `${Number(p.unrealized_pl) >= 0 ? "+" : ""}${fmt(p.unrealized_pl)} (${Number(p.unrealized_plpc) >= 0 ? "+" : ""}${Number(p.unrealized_plpc).toFixed(2)}%)`,
-    change_today: `${Number(p.change_today) >= 0 ? "+" : ""}${fmt(p.change_today)}`,
+    unrealized_pl: `${Number(p.unrealized_pl) >= 0 ? "+" : ""}${fmt(p.unrealized_pl)} (${Number(p.unrealized_plpc) >= 0 ? "+" : ""}${(Number(p.unrealized_plpc) * 100).toFixed(2)}%)`,
+    change_today: `${Number(p.change_today) >= 0 ? "+" : ""}${(Number(p.change_today) * 100).toFixed(2)}%`,
   }));
   console.log(JSON.stringify({ positions, total: pos.length }));
 }
 
 async function cmdTicker(symbol) {
-  // Use last quote from the quote endpoint (works on paper)
+  // Use last quote from the data API (required for market data)
   const sym = symbol.toUpperCase();
   const asset = await alpacaRequest(`/assets/${sym}`);
   try {
-    const quote = await alpacaRequest(`/stocks/${sym}/quotes/latest`);
+    const quote = await alpacaRequest(`/stocks/${sym}/quotes/latest`, "GET", null, true);
     const mid = (quote.quote.bp + quote.quote.ap) / 2;
     console.log(JSON.stringify({
       symbol: sym,
@@ -207,7 +211,27 @@ async function cmdCloseAll() {
 // ── Main ──────────────────────────────────────────────────
 async function main() {
   await loadEnv();
+
+  if (!process.env.ALPACA_API_KEY || !process.env.ALPACA_API_SECRET) {
+    console.error("ERROR: ALPACA_API_KEY and ALPACA_API_SECRET must be set.\nSet them in your environment or place them in a .env file (see loadEnv() for supported paths).");
+    process.exit(1);
+  }
+
   const [,, cmd, ...args] = process.argv;
+
+  // Argument validation
+  const argRequired = { ticker: 1, buy: 2, sell: 2, close: 1 };
+  const usageMsg = {
+    ticker: "ticker <symbol>",
+    buy: "buy <symbol> <qty>",
+    sell: "sell <symbol> <qty>",
+    close: "close <symbol>",
+  };
+  if (argRequired[cmd] !== undefined && args.length < argRequired[cmd]) {
+    console.error(`Usage: node alpaca.mjs ${usageMsg[cmd] || cmd}`);
+    console.error(`Missing required argument(s) for "${cmd}"`);
+    process.exit(1);
+  }
 
   try {
     switch (cmd) {

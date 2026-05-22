@@ -26,6 +26,17 @@ node <skill_dir>/scripts/alpaca.mjs <command> [args]
 | `close` | `<symbol>` | Close entire position |
 | `close-all` | — | Close all positions |
 
+## Prerequisites
+
+Set these environment variables (or place them in a `.env` file — see the script's `loadEnv()` for supported locations):
+
+| Variable | Description |
+|----------|-------------|
+| `ALPACA_API_KEY` | Alpaca paper trading API key ID |
+| `ALPACA_API_SECRET` | Alpaca paper trading API secret key |
+
+The script will fail with a clear error if either is missing.
+
 ## Workflow
 
 1. Resolve `<skill_dir>` to the absolute path of this skill's directory
