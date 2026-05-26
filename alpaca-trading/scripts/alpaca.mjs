@@ -76,7 +76,7 @@ function fmt(n) {
 async function cmdAccount() {
   const a = await alpacaRequest("/account");
   const pnl = Number(a.equity) - Number(a.last_equity);
-  const pnlPct = (pnl / Number(a.last_equity) * 100).toFixed(2);
+  const pnlPct = Number(a.last_equity) === 0 ? "0.00" : (pnl / Number(a.last_equity) * 100).toFixed(2);
   console.log(JSON.stringify({
     cash: fmt(a.cash),
     portfolio: fmt(a.portfolio_value),
@@ -125,20 +125,22 @@ async function cmdTicker(symbol) {
       shortable: asset.shortable,
       fractionable: asset.fractionable,
     }));
-  } catch {
+  } catch (e) {
     // Fallback: just asset info
     console.log(JSON.stringify({
       symbol: sym,
       easy_to_borrow: asset.easy_to_borrow,
       shortable: asset.shortable,
       fractionable: asset.fractionable,
-      note: "Quote data unavailable on paper",
+      quote_error: e.message,
+      note: "Quote data unavailable",
     }));
   }
 }
 
 async function cmdOrders(limit = 10) {
-  const orders = await alpacaRequest(`/orders?limit=${limit}&status=all`);
+  const params = new URLSearchParams({ limit: String(limit), status: "all" });
+  const orders = await alpacaRequest(`/orders?${params}`);
   const result = orders.map(o => ({
     id: o.id,
     symbol: o.symbol,
@@ -154,9 +156,14 @@ async function cmdOrders(limit = 10) {
 }
 
 async function cmdBuy(symbol, qty) {
+  const q = Number(qty);
+  if (!Number.isFinite(q) || q <= 0) {
+    console.error(`ERROR: Invalid quantity "${qty}". Must be a positive number.`);
+    process.exit(1);
+  }
   const order = await alpacaRequest("/orders", "POST", {
     symbol: symbol.toUpperCase(),
-    qty: String(qty),
+    qty: String(q),
     side: "buy",
     type: "market",
     time_in_force: "day",
@@ -171,9 +178,14 @@ async function cmdBuy(symbol, qty) {
 }
 
 async function cmdSell(symbol, qty) {
+  const q = Number(qty);
+  if (!Number.isFinite(q) || q <= 0) {
+    console.error(`ERROR: Invalid quantity "${qty}". Must be a positive number.`);
+    process.exit(1);
+  }
   const order = await alpacaRequest("/orders", "POST", {
     symbol: symbol.toUpperCase(),
-    qty: String(qty),
+    qty: String(q),
     side: "sell",
     type: "market",
     time_in_force: "day",
