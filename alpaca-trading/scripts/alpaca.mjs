@@ -22,6 +22,12 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function loadEnv() {
+  // Only read the specific vars we need
+  const NEEDED = ["ALPACA_API_KEY", "ALPACA_API_SECRET"];
+
+  // If already set in the environment, nothing to load
+  if (NEEDED.every((k) => process.env[k])) return;
+
   const candidates = [
     path.join(os.homedir(), ".openclaw", ".env"),
     path.join(__dirname, "..", "..", "..", "..", "..", ".env"),
@@ -38,12 +44,16 @@ function loadEnv() {
       const eq = t.indexOf("=");
       if (eq === -1) continue;
       const k = t.slice(0, eq);
+      // Only load the vars we need; skip unrelated keys
+      if (!NEEDED.includes(k)) continue;
+      if (process.env[k] !== undefined) continue;
       let v = t.slice(eq + 1);
       if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'")))
         v = v.slice(1, -1);
-      if (process.env[k] === undefined) process.env[k] = v;
+      process.env[k] = v;
     }
-    return;
+    // Stop early if both vars are found
+    if (NEEDED.every((k) => process.env[k])) return;
   }
 }
 
@@ -139,7 +149,12 @@ async function cmdTicker(symbol) {
 }
 
 async function cmdOrders(limit = 10) {
-  const params = new URLSearchParams({ limit: String(limit), status: "all" });
+  const n = Number(limit);
+  if (!Number.isFinite(n) || n < 1 || n > 500 || !Number.isInteger(n)) {
+    console.error(`ERROR: Invalid limit "${limit}". Must be an integer between 1 and 500.`);
+    process.exit(1);
+  }
+  const params = new URLSearchParams({ limit: String(n), status: "all" });
   const orders = await alpacaRequest(`/orders?${params}`);
   const result = orders.map(o => ({
     id: o.id,
@@ -220,6 +235,14 @@ async function cmdCloseAll() {
   }));
 }
 
+// ── Confirmation guard for mutating commands ──────────────
+function confirmMutation() {
+  if (process.argv.includes("--yes") || process.argv.includes("-y") || process.env.ALPACA_CONFIRM === "1")
+    return;
+  console.error("ERROR: Confirmation required for mutating commands. Pass --yes or set ALPACA_CONFIRM=1.");
+  process.exit(1);
+}
+
 // ── Main ──────────────────────────────────────────────────
 async function main() {
   await loadEnv();
@@ -251,10 +274,10 @@ async function main() {
       case "positions": await cmdPositions(); break;
       case "ticker": await cmdTicker(args[0]); break;
       case "orders": await cmdOrders(args[0]); break;
-      case "buy": await cmdBuy(args[0], args[1]); break;
-      case "sell": await cmdSell(args[0], args[1]); break;
-      case "close": await cmdClose(args[0]); break;
-      case "close-all": await cmdCloseAll(); break;
+      case "buy": confirmMutation(); await cmdBuy(args[0], args[1]); break;
+      case "sell": confirmMutation(); await cmdSell(args[0], args[1]); break;
+      case "close": confirmMutation(); await cmdClose(args[0]); break;
+      case "close-all": confirmMutation(); await cmdCloseAll(); break;
       default:
         console.error(`Usage: node alpaca.mjs <account|positions|ticker|orders|buy|sell|close|close-all> [args]`);
         console.error(`Unknown command: ${cmd}`);
