@@ -12,7 +12,6 @@ import {
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
-import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,7 +35,7 @@ function loadState() {
 }
 
 function saveState(state) {
-  fs.writeFileSync(TOKEN_FILE, JSON.stringify(state, null, 2), 'utf8');
+  fs.writeFileSync(TOKEN_FILE, JSON.stringify(state, null, 2), { encoding: 'utf8', mode: 0o600 });
 }
 
 function prompt(question) {
@@ -92,6 +91,10 @@ async function doAuth() {
       grant_types: ['authorization_code', 'refresh_token'],
     };
   }
+
+  const resourceUrl = serverInfo.resourceMetadata?.resource
+    ? new URL(serverInfo.resourceMetadata.resource)
+    : undefined;
 
   // 3. Start authorization (PKCE)
   console.error(' Generating PKCE challenge...');
@@ -198,8 +201,8 @@ async function getClient() {
     ? (typeof state.tokens.expires_at === 'number' ? state.tokens.expires_at : new Date(state.tokens.expires_at).getTime())
     : Date.now() + (state.tokens.expires_in || 3600) * 1000;
 
-  if (Date.now() > expiresAt - 300_000) {
-    // Token expires in < 5 minutes, refresh
+  if (Date.now() > expiresAt - 300_000 && state.tokens.refresh_token) {
+    // Token expires in < 5 minutes, refresh if we have a refresh token
     console.error('🔄 Refreshing access token...');
     try {
       const freshTokens = await refreshAuthorization(
