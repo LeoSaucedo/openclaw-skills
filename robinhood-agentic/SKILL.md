@@ -2,7 +2,7 @@
 name: robinhood-agentic
 description: Connect to Robinhood Agentic Trading via MCP — view portfolio, analyze positions, place trades, and execute automated strategies through Robinhood's official MCP server.
 metadata:
-  author: ada
+  author: https://github.com/cgsphoto-ada
   version: "1.0.0"
 ---
 

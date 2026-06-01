@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TOKEN_FILE = path.join(__dirname, '.rh-tokens.json');
@@ -36,6 +37,8 @@ function loadState() {
 
 function saveState(state) {
   fs.writeFileSync(TOKEN_FILE, JSON.stringify(state, null, 2), { encoding: 'utf8', mode: 0o600 });
+  // mode only applies on file creation; chmod to enforce on existing files
+  fs.chmodSync(TOKEN_FILE, 0o600);
 }
 
 function prompt(question) {
@@ -98,6 +101,7 @@ async function doAuth() {
 
   // 3. Start authorization (PKCE)
   console.error(' Generating PKCE challenge...');
+  const oauthState = crypto.randomUUID();
   const auth = await startAuthorization(
     serverInfo.authorizationServerUrl,
     {
@@ -105,6 +109,7 @@ async function doAuth() {
       clientInformation: clientInfo,
       redirectUrl: REDIRECT_URI,
       resource: resourceUrl,
+      state: oauthState,
       scope: undefined, // server will assign default scopes
     }
   );
@@ -131,6 +136,12 @@ async function doAuth() {
     // Try parsing as a full URL first
     const url = new URL(input.startsWith('http') ? input : `http://localhost/?${input}`);
     authorizationCode = url.searchParams.get('code');
+    // Verify state parameter for CSRF protection
+    const returnedState = url.searchParams.get('state');
+    if (returnedState && returnedState !== oauthState) {
+      console.error('❌ State parameter mismatch — possible CSRF attack. Aborting.');
+      process.exit(1);
+    }
     if (!authorizationCode) {
       // Might just be the raw code
       authorizationCode = input;
@@ -201,7 +212,9 @@ async function getClient() {
   // Check if token needs refresh
   const expiresAt = state.tokens.expires_at
     ? (typeof state.tokens.expires_at === 'number' ? state.tokens.expires_at : new Date(state.tokens.expires_at).getTime())
-    : Date.now() + (state.tokens.expires_in || 3600) * 1000;
+    : (state.tokens.expires_in
+      ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000  // derive from issuance time
+      : Date.now() + 3600 * 1000);
 
   if (Date.now() > expiresAt - 300_000 && state.tokens.refresh_token) {
     // Token expires in < 5 minutes, refresh if we have a refresh token
@@ -317,7 +330,9 @@ async function cmdStatus() {
 
   const expiresAt = state.tokens.expires_at
     ? (typeof state.tokens.expires_at === 'number' ? state.tokens.expires_at : new Date(state.tokens.expires_at).getTime())
-    : null;
+    : (state.tokens.expires_in && state.savedAt
+      ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000
+      : null);
 
   const hasRefresh = !!state.tokens.refresh_token;
   const now = Date.now();

@@ -10,7 +10,8 @@
   "scripts": {
     "auth": "node rh-client.mjs auth",
     "list-tools": "node rh-client.mjs list-tools",
-    "call": "node rh-client.mjs call"
+    "call": "node rh-client.mjs call",
+    "status": "node rh-client.mjs status"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
