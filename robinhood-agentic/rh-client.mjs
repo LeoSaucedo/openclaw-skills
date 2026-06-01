@@ -104,6 +104,7 @@ async function doAuth() {
       metadata,
       clientInformation: clientInfo,
       redirectUrl: REDIRECT_URI,
+      resource: resourceUrl,
       scope: undefined, // server will assign default scopes
     }
   );
@@ -156,6 +157,7 @@ async function doAuth() {
         authorizationCode,
         codeVerifier: auth.codeVerifier,
         redirectUri: REDIRECT_URI,
+        resource: resourceUrl,
       }
     );
   } catch (err) {
@@ -274,7 +276,12 @@ async function cmdCall(toolName, argsJson) {
       for await (const chunk of process.stdin) chunks.push(chunk);
       args = JSON.parse(Buffer.concat(chunks).toString());
     } else {
-      args = JSON.parse(argsJson);
+      try {
+        args = JSON.parse(argsJson);
+      } catch (err) {
+        console.error(`❌ Invalid JSON args: ${err.message}`);
+        process.exit(1);
+      }
     }
   }
 
