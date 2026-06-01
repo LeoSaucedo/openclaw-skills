@@ -12,11 +12,9 @@ import {
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
-import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TOKEN_FILE = path.join(__dirname, '.rh-tokens.json');
+const TOKEN_FILE = process.env.RH_TOKEN_FILE || path.join(process.cwd(), '.rh-tokens.json');
 const MCP_URL = 'https://agent.robinhood.com/mcp/trading';
 const REDIRECT_PORT = 1455;
 const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
@@ -135,12 +133,15 @@ async function doAuth() {
   try {
     // Try parsing as a full URL first
     const url = new URL(input.startsWith('http') ? input : `http://localhost/?${input}`);
-    authorizationCode = url.searchParams.get('code');
-    // Verify state parameter for CSRF protection
-    const returnedState = url.searchParams.get('state');
-    if (returnedState && returnedState !== oauthState) {
-      console.error('❌ State parameter mismatch — possible CSRF attack. Aborting.');
-      process.exit(1);
+    if (input.startsWith('http')) {
+      authorizationCode = url.searchParams.get('code');
+      // Verify state parameter for CSRF protection (required for full URL paste)
+      const returnedState = url.searchParams.get('state');
+      if (!returnedState || returnedState !== oauthState) {
+        console.error('❌ State parameter mismatch or missing. Possible CSRF attack or wrong URL.');
+        console.error('   If you copied the code manually, paste just the code value (not the URL).');
+        process.exit(1);
+      }
     }
     if (!authorizationCode) {
       // Might just be the raw code
