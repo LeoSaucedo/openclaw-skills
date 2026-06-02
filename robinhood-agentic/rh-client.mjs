@@ -23,6 +23,14 @@ const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+// OAuth tokens use seconds-since-epoch; JS uses milliseconds. Normalize.
+function normalizeExpiry(expiresAt) {
+  if (!expiresAt) return null;
+  const n = typeof expiresAt === 'number' ? expiresAt : new Date(expiresAt).getTime();
+  // If it looks like seconds-since-epoch (year < 2100), convert to ms
+  return n < 4_103_000_000 ? n * 1000 : n;
+}
+
 function debug(...args) {
   if (process.env.RH_DEBUG) console.error('[rh-client]', ...args);
 }
@@ -127,46 +135,37 @@ async function doAuth() {
   console.error(`   ${REDIRECT_URI}?code=XXXX&state=YYYY`);
   console.error('');
   console.error(" Since the redirect goes to localhost on YOUR machine (not the VPS),");
-  console.error(" paste the full redirect URL below (e.g., http://localhost:1455/callback?code=...&state=...).");
-  console.error(' Paste just the code value only if you cannot copy the full URL (state validation will be skipped).');
+  console.error(" paste the full redirect URL below.");
+  console.error(' If you can only copy the code, paste it here and you will be prompted for the state value separately.');
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.error('');
 
   const input = await prompt('Redirect URL or code: ');
 
+  // Extract code + state from whatever the user pasted
   let authorizationCode;
+  let returnedState;
 
-  // Try parsing as a URL regardless of format
   if (/^[?&]?code=/.test(input) || input.startsWith('http')) {
     try {
       const url = new URL(input.startsWith('http') ? input : `http://localhost/?${input}`);
       authorizationCode = url.searchParams.get('code');
-      const returnedState = url.searchParams.get('state');
-      // State validation is required when both code and state are present in the URL
-      if (returnedState) {
-        if (returnedState !== oauthState) {
-          console.error('❌ State parameter mismatch — possible CSRF attack. Aborting.');
-          process.exit(1);
-        }
-      } else if (input.startsWith('http')) {
-        // Full URL paste without state parameter — suspicious
-        console.error('⚠️  Full URL pasted but no state parameter found. State validation skipped.');
-        console.error('   If this is unexpected, double-check the pasted URL is complete.');
-      }
-    } catch {
-      // URL parse failed, fall through to raw code handling
-    }
+      returnedState = url.searchParams.get('state');
+    } catch { /* fall through */ }
   }
 
   if (!authorizationCode) {
-    // Raw code paste (no URL structure detected) — require user to confirm they want to skip CSRF
-    const confirm = await prompt('⚠️  No state parameter found. State validation protects against CSRF attacks.\n   Proceed anyway? Type "yes" to skip state validation: ');
-    if (confirm.toLowerCase() !== 'yes') {
-      console.error('❌ Aborted. Please paste the full redirect URL for state validation.');
-      process.exit(1);
-    }
+    // Raw code — prompt for state separately
     authorizationCode = input;
-    console.error('⚠️  Proceeding without state validation.');
+  }
+
+  if (!returnedState) {
+    returnedState = await prompt('State parameter (from redirect URL): ');
+  }
+
+  if (returnedState !== oauthState) {
+    console.error('❌ State parameter mismatch — possible CSRF attack. Aborting.');
+    process.exit(1);
   }
 
   if (!authorizationCode) {
@@ -228,11 +227,15 @@ async function getClient() {
   }
 
   // Check if token needs refresh
-  const expiresAt = state.tokens.expires_at
-    ? (typeof state.tokens.expires_at === 'number' ? state.tokens.expires_at : new Date(state.tokens.expires_at).getTime())
-    : (state.tokens.expires_in && state.savedAt
-      ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000  // derive from issuance time
-      : Date.now() + 3600 * 1000);
+  const expiresAt = normalizeExpiry(state.tokens.expires_at)
+    || (state.tokens.expires_in && state.savedAt
+      ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000
+      : null);
+
+  if (!expiresAt) {
+    console.error('�� Cannot determine token expiry. Re-authenticate: rh-client auth');
+    process.exit(1);
+  }
 
   if (Date.now() > expiresAt - 300_000 && state.tokens.refresh_token) {
     // Token expires in < 5 minutes, refresh if we have a refresh token
@@ -358,15 +361,14 @@ async function cmdStatus() {
     return;
   }
 
-  const expiresAt = state.tokens.expires_at
-    ? (typeof state.tokens.expires_at === 'number' ? state.tokens.expires_at : new Date(state.tokens.expires_at).getTime())
-    : (state.tokens.expires_in && state.savedAt
+  const expiresAt = normalizeExpiry(state.tokens.expires_at)
+    || (state.tokens.expires_in && state.savedAt
       ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000
       : null);
 
   const hasRefresh = !!state.tokens.refresh_token;
   const now = Date.now();
-  const expired = expiresAt && now > expiresAt;
+  const expired = expiresAt ? now > expiresAt : null;
 
   console.log(JSON.stringify({
     authenticated: true,
