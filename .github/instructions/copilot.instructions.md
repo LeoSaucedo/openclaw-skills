@@ -42,7 +42,7 @@ Skills live at the repo root (NOT inside a `skills/` directory):
   package.json    # If the skill is a Node.js package
 ```
 
-The root README.md references skills by their `skills/<name>` path (e.g., `skills/robinhood-agentic/`), matching the repo's consistent table format.
+The root README.md references skills by their `skills/<name>` path (e.g., `skills/robinhood-agentic`), matching the repo's consistent table format. This convention describes the path from the workspace root (e.g., `/home/ada/.openclaw/workspace/skills/`), where the repo itself is the `skills/` directory. When browsing the repository on GitHub, skills are top-level directories directly.
 
 ## Package Skills (Node.js)
 

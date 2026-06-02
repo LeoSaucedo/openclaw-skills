@@ -32,10 +32,10 @@ node rh-client.mjs list-tools
 
 # Call a tool
 node rh-client.mjs call get_portfolio
-node rh-client.mjs call place_order '{"symbol":"AAPL","quantity":1,"side":"buy"}'
+node rh-client.mjs call place_equity_order '{"symbol":"AAPL","quantity":1,"side":"buy"}'
 
 # Pipe complex args from stdin
-echo '{"symbol":"AAPL"}' | node rh-client.mjs call get_quote -
+echo '{"symbol":"AAPL"}' | node rh-client.mjs call get_equity_quotes -
 ```
 
 ## How It Works

@@ -63,7 +63,7 @@ Returns a JSON array of tool definitions with names, descriptions, and input sch
 node rh-client.mjs call <tool_name> '<json_args>'
 
 # Or with stdin for complex args:
-echo '{"symbol": "AAPL"}' | node rh-client.mjs call get_quote -
+echo '{"symbol": "AAPL"}' | node rh-client.mjs call get_equity_quotes -
 ```
 Output depends on the MCP tool response — may be plain text or JSON. Error messages go to stderr.
 
