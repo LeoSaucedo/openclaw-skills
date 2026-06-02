@@ -129,7 +129,7 @@ async function doAuth() {
   // 4. User authorizes in browser
   console.error('');
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.error(' Open this URL in your browser to authorize:');
+  console.error(' Open this URL in a desktop browser (mobile redirects to the Robinhood app):');
   console.error('');
   console.error(`   ${auth.authorizationUrl}`);
   console.error('');

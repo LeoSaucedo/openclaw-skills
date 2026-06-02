@@ -17,7 +17,7 @@ Robinhood Agentic uses OAuth 2.1 with PKCE. Run the auth command and follow the 
 node rh-client.mjs auth
 ```
 
-This prints an authorization URL. Open it in your browser, log into Robinhood, then paste the redirect URL back. Tokens are stored in `.rh-tokens.json` with 0600 permissions and never committed.
+This prints an authorization URL. Open it in a **desktop browser** (mobile redirects to the Robinhood app which won't work), log into Robinhood, then paste the redirect URL back. Tokens are stored in `.rh-tokens.json` with 0600 permissions and never committed.
 
 Set `RH_TOKEN_FILE` to override the token storage path. Set `RH_DEBUG=1` for verbose logging.
 

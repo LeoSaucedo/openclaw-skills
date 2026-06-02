@@ -36,7 +36,7 @@ node rh-client.mjs auth
 The script will:
 1. Discover Robinhood's OAuth endpoints
 2. Generate a PKCE challenge
-3. Print an authorization URL → **Open this in your browser**
+3. Print an authorization URL → **Open this in a desktop browser** (mobile redirects to the Robinhood app which doesn't support the Agentic flow)
 4. Log into Robinhood, authorize the agent
 5. You'll be redirected to `http://localhost:1455/callback?code=XXXX...`
 6. **Copy the full redirect URL and paste it** back into the terminal
