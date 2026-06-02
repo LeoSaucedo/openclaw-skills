@@ -53,7 +53,7 @@ timeout: 600s, thinking: minimal
 
 ### 3. Customize
 
-Adjust the chunk size (default: $50) and max positions in the Strategy Parameters table below to match your capital. The Morning Routine buys using `dollar_amount`—edit that value to change your per-trade size.
+Adjust max positions in the Strategy Parameters table. Trade size is automatically set to **10% of total account value** — no manual editing needed.
 
 ---
 
@@ -61,7 +61,7 @@ Adjust the chunk size (default: $50) and max positions in the Strategy Parameter
 
 | Parameter | Value |
 |---|---|
-| Chunk size | $50 |
+| Chunk size | 10% of account value (auto-calculated) |
 | Max positions | 5 (or until settled cash exhausted) |
 | Stop-loss | -5% from entry |
 | Profit target | +10% from entry |
@@ -93,22 +93,23 @@ Pick the top-ranked symbol. The scanner calls the Robinhood MCP for live quotes 
 ### 3. Announce the Pick
 Post to channel: symbol, current price, % change, catalyst, target +10%, stop -5%.
 
-### 4. Check Settled Cash
+### 4. Check Portfolio & Calculate Chunk
 ```bash
 node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call get_portfolio '{"account_number":"<ACCT>"}'
 ```
-Verify settled cash ≥ $50. Get account_number from `get_accounts` if needed. If not enough cash, post why and skip.
+Extract `total_value`. Calculate **chunk = total_value × 0.10** (rounded to 2 decimals). Verify settled cash ≥ chunk. Get account_number from `get_accounts` if needed. If not enough cash, post why and skip.
 
 ### 5. Review & Place Buy Order
 
 First, review the order to surface pre-trade warnings:
 ```bash
-node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call review_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"50.00","time_in_force":"gfd","market_hours":"regular_hours"}'
+node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call review_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"<CHUNK>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
 Post any alerts from the review output to the channel. Then place the order:
 ```bash
-node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call place_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"50.00","time_in_force":"gfd","market_hours":"regular_hours"}'
+node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call place_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"<CHUNK>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
+Replace `<CHUNK>` with the calculated 10% value (e.g. `"50.00"` for a $500 account).
 The user handles final approval in the Robinhood app. Advanced users may skip the review step if they understand the risks.
 
 ---
