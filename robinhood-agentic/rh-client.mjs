@@ -36,9 +36,9 @@ function loadState() {
 }
 
 function saveState(state) {
-  fs.writeFileSync(TOKEN_FILE, JSON.stringify(state, null, 2), { encoding: 'utf8', mode: 0o600 });
-  // mode only applies on file creation; chmod to enforce on existing files
-  fs.chmodSync(TOKEN_FILE, 0o600);
+  const tmp = `${TOKEN_FILE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(state, null, 2), { encoding: 'utf8', mode: 0o600 });
+  fs.renameSync(tmp, TOKEN_FILE);
 }
 
 function prompt(question) {
@@ -125,33 +125,43 @@ async function doAuth() {
   console.error(`   ${REDIRECT_URI}?code=XXXX&state=YYYY`);
   console.error('');
   console.error(" Since the redirect goes to localhost on YOUR machine (not the VPS),");
-  console.error(" paste the full redirect URL below, or just the 'code' value.");
+  console.error(" paste the full redirect URL below (e.g., http://localhost:1455/callback?code=...&state=...).");
+  console.error(' Paste just the code value only if you cannot copy the full URL (state validation will be skipped).');
   console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.error('');
 
   const input = await prompt('Redirect URL or code: ');
 
   let authorizationCode;
-  try {
-    // Try parsing as a full URL first
-    const url = new URL(input.startsWith('http') ? input : `http://localhost/?${input}`);
-    if (input.startsWith('http')) {
+  let isRawCode = false;
+
+  // Try parsing as a URL regardless of format
+  if (/^[?&]?code=/.test(input) || input.startsWith('http')) {
+    try {
+      const url = new URL(input.startsWith('http') ? input : `http://localhost/${input}`);
       authorizationCode = url.searchParams.get('code');
-      // Verify state parameter for CSRF protection (required for full URL paste)
       const returnedState = url.searchParams.get('state');
-      if (!returnedState || returnedState !== oauthState) {
-        console.error('❌ State parameter mismatch or missing. Possible CSRF attack or wrong URL.');
-        console.error('   If you copied the code manually, paste just the code value (not the URL).');
-        process.exit(1);
+      // State validation is required when both code and state are present in the URL
+      if (returnedState) {
+        if (returnedState !== oauthState) {
+          console.error('❌ State parameter mismatch — possible CSRF attack. Aborting.');
+          process.exit(1);
+        }
+      } else if (input.startsWith('http')) {
+        // Full URL paste without state parameter — suspicious
+        console.error('⚠️  Full URL pasted but no state parameter found. State validation skipped.');
+        console.error('   If this is unexpected, double-check the pasted URL is complete.');
       }
+    } catch {
+      // URL parse failed, fall through to raw code handling
     }
-    if (!authorizationCode) {
-      // Might just be the raw code
-      authorizationCode = input;
-    }
-  } catch {
-    // Treat as raw code
+  }
+
+  if (!authorizationCode) {
+    // Raw code paste (no URL structure detected)
     authorizationCode = input;
+    isRawCode = true;
+    console.error('⚠️  Raw code detected — state validation skipped. Full URL paste is preferred.');
   }
 
   if (!authorizationCode) {
@@ -241,9 +251,21 @@ async function getClient() {
       saveState(state);
       console.error('✅ Token refreshed');
     } catch (err) {
-      console.error('❌ Token refresh failed, trying to use existing token:', err.message);
-      // Continue with existing token - it might still be valid
+      console.error('❌ Token refresh failed:', err.message);
+      // If the token is already expired, continuing is pointless
+      if (Date.now() > expiresAt) {
+        console.error('   Access token is expired and refresh failed. Re-authenticate: rh-client auth');
+        process.exit(1);
+      }
+      console.error('   Using existing token (not yet expired)...');
     }
+  }
+
+  // Fail fast if token is expired and refresh isn't possible
+  if (Date.now() > expiresAt && !state.tokens.refresh_token) {
+    console.error('❌ Access token is expired and no refresh token available.');
+    console.error('   Re-authenticate: rh-client auth');
+    process.exit(1);
   }
 
   const transport = new StreamableHTTPClientTransport(
