@@ -101,15 +101,10 @@ async function doAuth() {
     );
     debug('Registered client:', clientInfo.client_id);
   } catch (err) {
-    // If registration fails, we might need static client_id from Robinhood
-    console.error(' Dynamic registration failed, using static client...');
-    console.error('  Error:', err.message);
-    // Fall back to a static configuration - Robinhood might use a fixed client_id
-    clientInfo = {
-      client_id: 'robinhood-agentic-mcp',
-      token_endpoint_auth_method: 'none',
-      grant_types: ['authorization_code', 'refresh_token'],
-    };
+    console.error('❌ Dynamic client registration failed:', err.message);
+    console.error('   Robinhood Agentic MCP requires registering an OAuth client.');
+    console.error('   Check network connectivity and try again.');
+    process.exit(1);
   }
 
   const resourceUrl = serverInfo.resourceMetadata?.resource
@@ -127,7 +122,7 @@ async function doAuth() {
       redirectUrl: REDIRECT_URI,
       resource: resourceUrl,
       state: oauthState,
-      scope: undefined, // server will assign default scopes
+      scope: 'internal',
     }
   );
 
