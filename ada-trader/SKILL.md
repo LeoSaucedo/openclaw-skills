@@ -27,7 +27,7 @@ Daily swing trading with dynamic stock selection. Scans pre-market movers, ranks
 ### 1. Install Dependencies
 
 The Robinhood Agentic skill must be installed and authenticated:
-```
+```bash
 cd robinhood-agentic && pnpm install && node rh-client.mjs auth
 ```
 

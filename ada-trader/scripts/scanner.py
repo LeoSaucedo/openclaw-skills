@@ -6,6 +6,17 @@ Usage: read tickers from stdin (comma-separated or one per line), outputs JSON
 
 import json, sys, subprocess, os
 
+
+def safe_float(val, default=0.0):
+    """Convert a value to float, returning default on failure (non-numeric strings, None, etc.)."""
+    if val is None:
+        return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_MCP = os.path.expanduser("~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs")
 LOCAL_MCP = os.path.join(SCRIPT_DIR, "..", "..", "robinhood-agentic", "rh-client.mjs")
@@ -63,14 +74,14 @@ def rank(tickers):
     for sym, q in quotes.items():
         if not isinstance(q, dict):
             continue
-        last = float(q.get("last_trade_price", 0) or 0)
-        prior = float(q.get("prior_close", 0) or 0)
+        last = safe_float(q.get("last_trade_price"))
+        prior = safe_float(q.get("prior_close"))
         if prior <= 0 or abs(last - prior) / prior < 0.005:
             continue  # Skip flat tickers (<0.5% absolute move)
 
         pct = round(((last - prior) / prior) * 100, 2)
-        bid = float(q.get("bid_price", 0) or 0)
-        ask = float(q.get("ask_price", 0) or 0)
+        bid = safe_float(q.get("bid_price"))
+        ask = safe_float(q.get("ask_price"))
         spread = round((ask - bid) / prior * 100, 2) if ask > bid else 0.0
         rankings.append({
             "symbol": sym,
@@ -105,4 +116,6 @@ if __name__ == "__main__":
     }
     if err:
         result["error"] = err
+        print(json.dumps(result))
+        sys.exit(1)
     print(json.dumps(result))
