@@ -1,6 +1,6 @@
 ---
 name: ada-trader
-description: Automated daily swing trading strategy — scans pre-market movers, picks momentum stocks, buys at open, sells at close with stop-loss and profit targets. Designed for small cash accounts ($500) using Robinhood Agentic MCP.
+description: Automated daily swing trading strategy — scans pre-market movers, picks momentum stocks, buys at open, manages exits at afternoon check with stop-loss and profit targets. Designed for small cash accounts ($500) using Robinhood Agentic MCP.
 metadata:
   author: github.com/LeoSaucedo
   version: "1.0.0"
@@ -13,7 +13,7 @@ metadata:
 
 # Ada Trader
 
-Daily swing trading with dynamic stock selection. Scans pre-market movers, ranks by momentum, buys at open, exits at close with strict risk management.
+Daily swing trading with dynamic stock selection. Scans pre-market movers, ranks by momentum, buys at open, manages exits with stop-loss and profit targets.
 
 ## Account Requirements
 

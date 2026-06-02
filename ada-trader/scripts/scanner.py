@@ -6,12 +6,17 @@ Usage: read tickers from stdin (comma-separated or one per line), outputs JSON
 
 import json, sys, subprocess, os
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_MCP = os.path.expanduser("~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs")
-MCP = os.environ.get("MCP_CLIENT_PATH", DEFAULT_MCP)
+LOCAL_MCP = os.path.join(SCRIPT_DIR, "..", "..", "robinhood-agentic", "rh-client.mjs")
+MCP = os.environ.get("MCP_CLIENT_PATH", LOCAL_MCP if os.path.exists(LOCAL_MCP) else DEFAULT_MCP)
 
 
 def get_quotes(tickers):
     """Call Robinhood MCP for real-time quotes on up to 20 symbols."""
+    if not os.path.exists(MCP):
+        return {"error": f"MCP client not found at {MCP}. Set MCP_CLIENT_PATH env var or ensure robinhood-agentic is installed."}
+
     payload = json.dumps({"symbols": tickers[:20]})
     try:
         result = subprocess.run(
@@ -19,7 +24,7 @@ def get_quotes(tickers):
             capture_output=True, text=True, timeout=30
         )
     except FileNotFoundError:
-        return {"error": f"node not found or MCP client not found at {MCP}"}
+        return {"error": "node executable not found — install Node.js or check PATH"}
     except subprocess.TimeoutExpired:
         return {"error": "MCP call timed out after 30s"}
     except Exception as e:
