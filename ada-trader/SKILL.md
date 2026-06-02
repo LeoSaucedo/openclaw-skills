@@ -99,11 +99,17 @@ cd robinhood-agentic && node rh-client.mjs call get_portfolio '{"account_number"
 ```
 Verify settled cash ≥ $50. Get account_number from `get_accounts` if needed. If not enough cash, post why and skip.
 
-### 5. Place Buy Order
+### 5. Review & Place Buy Order
+
+First, review the order to surface pre-trade warnings:
+```
+cd robinhood-agentic && node rh-client.mjs call review_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"50.00","time_in_force":"gfd","market_hours":"regular_hours"}'
+```
+Post any alerts from the review output to the channel. Then place the order:
 ```
 cd robinhood-agentic && node rh-client.mjs call place_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"50.00","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
-Do NOT call review_equity_order. Place directly — user handles approval in the Robinhood app.
+The user handles final approval in the Robinhood app. Advanced users may skip the review step if they understand the risks.
 
 ---
 
@@ -126,11 +132,17 @@ Calculate P&L: (current_price - avg_cost) / avg_cost × 100.
 - OLDEST open position → SELL (maintain daily rhythm — sell at least 1 per day)
 - P&L between -3% and -5% AND market weakening → SELL (EOD risk cut)
 
-### 4. Place Sell Orders
+### 4. Review & Place Sell Orders
+
+First, review the sell order to surface any pre-trade warnings:
+```
+cd robinhood-agentic && node rh-client.mjs call review_equity_order '{"account_number":"<ACCT>","symbol":"<TICKER>","side":"sell","type":"market","quantity":"<ALL SHARES FROM POSITIONS>","time_in_force":"gfd","market_hours":"regular_hours"}'
+```
+Post any alerts. Then place:
 ```
 cd robinhood-agentic && node rh-client.mjs call place_equity_order '{"account_number":"<ACCT>","symbol":"<TICKER>","side":"sell","type":"market","quantity":"<ALL SHARES FROM POSITIONS>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
-Use `quantity` (number of shares), NOT `dollar_amount`, for sell orders. Do not review first.
+Use `quantity` (number of shares), NOT `dollar_amount`, for sell orders. The user handles final approval in the Robinhood app. Advanced users may skip the review step if they understand the risks.
 
 ### 5. Report
 Post to channel: what sold, P&L per position, remaining positions.

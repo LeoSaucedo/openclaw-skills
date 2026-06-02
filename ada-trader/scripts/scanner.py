@@ -42,7 +42,7 @@ def get_quotes(tickers):
 def rank(tickers):
     """Score tickers by momentum (% change from prior close)."""
     quotes = get_quotes(tickers)
-    if not quotes or "error" in quotes:
+    if not isinstance(quotes, dict) or "error" in quotes:
         return [], quotes.get("error") if isinstance(quotes, dict) else "Unknown error"
 
     rankings = []
