@@ -4,7 +4,10 @@ Stock scanner: gets quotes on supplied tickers and ranks by momentum.
 Usage: read tickers from stdin (comma-separated or one per line), outputs JSON
 """
 
-import json, sys, subprocess, os
+import json
+import os
+import subprocess
+import sys
 
 
 def safe_float(val, default=0.0):
@@ -42,7 +45,8 @@ def get_quotes(tickers):
         return {"error": f"MCP call failed: {str(e)}"}
 
     if result.returncode != 0:
-        return {"error": f"MCP failed: {result.stderr.strip()}"}
+        err_msg = result.stderr.strip() or result.stdout.strip()
+        return {"error": f"MCP failed: {err_msg}"}
 
     raw = result.stdout.strip()
     if not raw:
