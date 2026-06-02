@@ -24,7 +24,7 @@ The MCP client (`rh-client.mjs`) handles OAuth 2.1 PKCE authentication to `https
 
 ```
 cd robinhood-agentic
-npm install
+pnpm install
 ```
 
 ### First-time Auth

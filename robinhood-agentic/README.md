@@ -6,7 +6,7 @@ MCP client for [Robinhood Agentic Trading](https://robinhood.com/us/en/support/a
 
 ```bash
 cd robinhood-agentic
-npm install
+pnpm install
 ```
 
 ## Authentication
