@@ -23,8 +23,6 @@ const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-// ─── helpers ────────────────────────────────────────────────────────────────
-
 function debug(...args) {
   if (process.env.RH_DEBUG) console.error('[rh-client]', ...args);
 }
@@ -186,6 +184,11 @@ async function doAuth() {
   }
 
   // 6. Save state
+  if (!tokens.expires_in) {
+    console.error('❌ OAuth response missing expires_in. Cannot determine token lifetime.');
+    process.exit(1);
+  }
+
   const state = {
     tokens,
     clientInfo,
@@ -246,6 +249,10 @@ async function getClient() {
       // Preserve refresh token if server doesn't issue a new one
       if (!freshTokens.refresh_token) {
         freshTokens.refresh_token = state.tokens.refresh_token;
+      }
+      // Preserve expires_in if refresh response omits it
+      if (!freshTokens.expires_in) {
+        freshTokens.expires_in = state.tokens.expires_in;
       }
       state.tokens = freshTokens;
       state.savedAt = new Date().toISOString();
