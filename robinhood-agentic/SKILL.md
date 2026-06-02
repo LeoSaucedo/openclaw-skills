@@ -72,14 +72,34 @@ Token refresh happens automatically when the access token is within 5 minutes of
 
 ## What OpenClaw Can Do
 
-After auth, OpenClaw can call any tool Robinhood exposes through the MCP server. This typically includes:
+After auth, OpenClaw can call any tool Robinhood exposes through the MCP server. Based on official docs, the available tools are:
 
-- **Portfolio**: account info, balances, positions, P&L
-- **Orders**: place market/limit/stop orders, view order history
-- **Market data**: quotes, fundamentals, news, historicals
-- **Automation**: rebalance, recurring investments, conditional orders
+### Account & Portfolio
 
-Use `list-tools` first to discover the exact API surface, then call tools as needed.
+| Tool | Description |
+|------|-------------|
+| `get_accounts` | View all Robinhood accounts |
+| `get_portfolio` | Portfolio snapshot — total value, asset class breakdown, buying power |
+| `get_equity_positions` | Open equity positions with quantity and cost basis |
+
+### Market Data
+
+| Tool | Description |
+|------|-------------|
+| `get_equity_quotes` | Real-time quotes + prior close for up to 20 symbols |
+| `search` | Find ticker by company name |
+| `get_equity_tradability` | Check if a symbol can be traded (including fractional) |
+
+### Orders
+
+| Tool | Description |
+|------|-------------|
+| `review_equity_order` | Simulate an order and get pre-trade warnings |
+| `place_equity_order` | Place an equity order |
+| `cancel_equity_order` | Cancel an open equity order |
+| `get_equity_orders` | View equity order history |
+
+Use `list-tools` after auth to discover the exact API surface — Robinhood is actively adding more tools.
 
 ## Security Notes
 
