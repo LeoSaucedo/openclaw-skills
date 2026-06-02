@@ -12,9 +12,11 @@ import {
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
 
-const TOKEN_FILE = process.env.RH_TOKEN_FILE || path.join(process.cwd(), '.rh-tokens.json');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const TOKEN_FILE = process.env.RH_TOKEN_FILE || path.join(__dirname, '.rh-tokens.json');
 const MCP_URL = 'https://agent.robinhood.com/mcp/trading';
 const REDIRECT_PORT = 1455;
 const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
@@ -213,7 +215,7 @@ async function getClient() {
   // Check if token needs refresh
   const expiresAt = state.tokens.expires_at
     ? (typeof state.tokens.expires_at === 'number' ? state.tokens.expires_at : new Date(state.tokens.expires_at).getTime())
-    : (state.tokens.expires_in
+    : (state.tokens.expires_in && state.savedAt
       ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000  // derive from issuance time
       : Date.now() + 3600 * 1000);
 

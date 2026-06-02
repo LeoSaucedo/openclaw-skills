@@ -8,7 +8,7 @@ metadata:
 
 # Robinhood Agentic Trading
 
-Connect to Robinhood Agentic Trading via MCP. This skill lets Ada access your Robinhood Agentic account — view portfolio, analyze positions, place trades, and execute automated strategies.
+Connect to Robinhood Agentic Trading via MCP. This skill lets OpenClaw access your Robinhood Agentic account — view portfolio, analyze positions, place trades, and execute automated strategies.
 
 ## Setup
 
@@ -70,7 +70,7 @@ Output depends on the MCP tool response — may be plain text or JSON. Error mes
 ### Refresh token (auto)
 Token refresh happens automatically when the access token is within 5 minutes of expiry (only if a refresh token is available). No manual intervention needed unless the refresh token itself expires.
 
-## What Ada Can Do
+## What OpenClaw Can Do
 
 After auth, I can call any tool Robinhood exposes through their MCP server. This typically includes:
 
