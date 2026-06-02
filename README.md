@@ -10,7 +10,7 @@ Collection of OpenClaw skills for API-powered assistant capabilities.
 | engram-memory | Graph-based long-term memory and relationship tracing | `skills/engram-memory` |
 | google-maps-directions | Drive time, distance, and route lookups via Google Maps | `skills/google-maps-directions` |
 | lastfm | Last.fm profile, scrobble, chart, and discovery queries | `skills/lastfm` |
-| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `robinhood-agentic/` |
+| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `skills/robinhood-agentic` |
 | soundcloud | Search tracks, user info, and playlist operations on SoundCloud | `skills/soundcloud` |
 | wolfram-alpha | Computational queries via Wolfram Alpha LLM API | `skills/wolfram-alpha` |
 

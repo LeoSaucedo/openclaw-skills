@@ -137,7 +137,7 @@ async function doAuth() {
   // Try parsing as a URL regardless of format
   if (/^[?&]?code=/.test(input) || input.startsWith('http')) {
     try {
-      const url = new URL(input.startsWith('http') ? input : `http://localhost/${input}`);
+      const url = new URL(input.startsWith('http') ? input : `http://localhost/?${input}`);
       authorizationCode = url.searchParams.get('code');
       const returnedState = url.searchParams.get('state');
       // State validation is required when both code and state are present in the URL
