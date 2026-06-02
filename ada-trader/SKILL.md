@@ -7,7 +7,7 @@ metadata:
   openclaw:
     emoji: "📈"
     requires:
-      bins: ["node", "python3"]
+      bins: ["node", "pnpm", "python3"]
       skills: ["robinhood-agentic"]
 ---
 

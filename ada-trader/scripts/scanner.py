@@ -6,16 +6,25 @@ Usage: read tickers from stdin (comma-separated or one per line), outputs JSON
 
 import json, sys, subprocess, os
 
-MCP = os.path.expanduser("~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs")
+DEFAULT_MCP = os.path.expanduser("~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs")
+MCP = os.environ.get("MCP_CLIENT_PATH", DEFAULT_MCP)
 
 
 def get_quotes(tickers):
     """Call Robinhood MCP for real-time quotes on up to 20 symbols."""
     payload = json.dumps({"symbols": tickers[:20]})
-    result = subprocess.run(
-        ["node", MCP, "call", "get_equity_quotes", payload],
-        capture_output=True, text=True, timeout=30
-    )
+    try:
+        result = subprocess.run(
+            ["node", MCP, "call", "get_equity_quotes", payload],
+            capture_output=True, text=True, timeout=30
+        )
+    except FileNotFoundError:
+        return {"error": f"node not found or MCP client not found at {MCP}"}
+    except subprocess.TimeoutExpired:
+        return {"error": "MCP call timed out after 30s"}
+    except Exception as e:
+        return {"error": f"MCP call failed: {str(e)}"}
+
     if result.returncode != 0:
         return {"error": f"MCP failed: {result.stderr.strip()}"}
 
@@ -84,7 +93,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     top, err = rank(tickers)
-    result = {"top": top, "scanned": len(tickers)}
+    result = {
+        "top": top,
+        "parsed": len(tickers),
+        "queried": min(len(tickers), 20),
+    }
     if err:
         result["error"] = err
     print(json.dumps(result))
