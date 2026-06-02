@@ -23,20 +23,7 @@ const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-// OAuth tokens use seconds-since-epoch; JS uses milliseconds. Normalize.
-function normalizeExpiry(expiresAt) {
-  if (!expiresAt) return null;
-  // Handle number, numeric string (common OAuth), or date string
-  let n;
-  if (typeof expiresAt === 'number' || (typeof expiresAt === 'string' && /^\d+(\.\d+)?$/.test(expiresAt.trim()))) {
-    n = Number(expiresAt);
-  } else {
-    n = new Date(expiresAt).getTime();
-  }
-  if (!Number.isFinite(n)) return null;
-  // If it looks like seconds-since-epoch (year < 2100), convert to ms
-  return n < 4_103_000_000 ? n * 1000 : n;
-}
+// ─── helpers ────────────────────────────────────────────────────────────────
 
 function debug(...args) {
   if (process.env.RH_DEBUG) console.error('[rh-client]', ...args);
@@ -150,7 +137,9 @@ async function doAuth() {
 
   if (/^[?&]?code=/.test(input) || input.startsWith('http')) {
     try {
-      const url = new URL(input.startsWith('http') ? input : `http://localhost/?${input}`);
+      // Strip leading ? or & from raw query strings to avoid double-? in URL
+      const cleanInput = input.startsWith('?') || input.startsWith('&') ? input.slice(1) : input;
+      const url = new URL(input.startsWith('http') ? cleanInput : `http://localhost/?${cleanInput}`);
       authorizationCode = url.searchParams.get('code');
       returnedState = url.searchParams.get('state');
     } catch { /* fall through */ }
