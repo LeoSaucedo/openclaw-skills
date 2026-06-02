@@ -26,7 +26,14 @@ const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
 // OAuth tokens use seconds-since-epoch; JS uses milliseconds. Normalize.
 function normalizeExpiry(expiresAt) {
   if (!expiresAt) return null;
-  const n = typeof expiresAt === 'number' ? expiresAt : new Date(expiresAt).getTime();
+  // Handle number, numeric string (common OAuth), or date string
+  let n;
+  if (typeof expiresAt === 'number' || (typeof expiresAt === 'string' && /^\d+(\.\d+)?$/.test(expiresAt.trim()))) {
+    n = Number(expiresAt);
+  } else {
+    n = new Date(expiresAt).getTime();
+  }
+  if (!Number.isFinite(n)) return null;
   // If it looks like seconds-since-epoch (year < 2100), convert to ms
   return n < 4_103_000_000 ? n * 1000 : n;
 }
