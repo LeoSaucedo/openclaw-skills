@@ -72,18 +72,18 @@ Token refresh happens automatically when the access token is within 5 minutes of
 
 ## What OpenClaw Can Do
 
-After auth, I can call any tool Robinhood exposes through their MCP server. This typically includes:
+After auth, OpenClaw can call any tool Robinhood exposes through the MCP server. This typically includes:
 
 - **Portfolio**: account info, balances, positions, P&L
 - **Orders**: place market/limit/stop orders, view order history
 - **Market data**: quotes, fundamentals, news, historicals
 - **Automation**: rebalance, recurring investments, conditional orders
 
-I'll use `list-tools` first to discover the exact API surface, then call tools as needed.
+Use `list-tools` first to discover the exact API surface, then call tools as needed.
 
 ## Security Notes
 
-- **Separate account**: The Agentic account is separate from your main Robinhood account — fund it with what you're comfortable with me managing
+- **Separate account**: The Agentic account is separate from your main Robinhood account — fund it with what you're comfortable with the agent managing
 - **Tokens stored locally**: OAuth tokens in `.rh-tokens.json` with restrictive 0600 permissions (gitignored, never committed)
 - **You're in control**: Robinhood shows trade previews, sends push notifications, and supports instant shutdown
-- **Each trade reviewed**: By default, I'll show you what I'm about to do before placing orders unless you explicitly enable auto-approval
+- **Each trade reviewed**: By default, the agent shows what it's about to do before placing orders unless you explicitly enable auto-approval

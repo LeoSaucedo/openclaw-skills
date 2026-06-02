@@ -36,6 +36,8 @@ function loadState() {
 }
 
 function saveState(state) {
+  const dir = path.dirname(TOKEN_FILE);
+  fs.mkdirSync(dir, { recursive: true });
   const tmp = `${TOKEN_FILE}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(state, null, 2), { encoding: 'utf8', mode: 0o600 });
   fs.renameSync(tmp, TOKEN_FILE);
@@ -157,9 +159,14 @@ async function doAuth() {
   }
 
   if (!authorizationCode) {
-    // Raw code paste (no URL structure detected)
+    // Raw code paste (no URL structure detected) — require user to confirm they want to skip CSRF
+    const confirm = await prompt('⚠️  No state parameter found. State validation protects against CSRF attacks.\n   Proceed anyway? Type "yes" to skip state validation: ');
+    if (confirm.toLowerCase() !== 'yes') {
+      console.error('❌ Aborted. Please paste the full redirect URL for state validation.');
+      process.exit(1);
+    }
     authorizationCode = input;
-    console.error('⚠️  Raw code detected — state validation skipped. Full URL paste is preferred.');
+    console.error('⚠️  Proceeding without state validation.');
   }
 
   if (!authorizationCode) {
