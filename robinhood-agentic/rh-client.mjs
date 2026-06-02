@@ -39,8 +39,11 @@ function saveState(state) {
   const dir = path.dirname(TOKEN_FILE);
   fs.mkdirSync(dir, { recursive: true });
   const tmp = `${TOKEN_FILE}.tmp`;
+  try { fs.unlinkSync(tmp); } catch { /* ok if not exists */ }
   fs.writeFileSync(tmp, JSON.stringify(state, null, 2), { encoding: 'utf8', mode: 0o600 });
+  fs.chmodSync(tmp, 0o600);
   fs.renameSync(tmp, TOKEN_FILE);
+  fs.chmodSync(TOKEN_FILE, 0o600);
 }
 
 function prompt(question) {
