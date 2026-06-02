@@ -101,6 +101,8 @@ After auth, OpenClaw can call any tool Robinhood exposes through the MCP server.
 
 Use `list-tools` after auth to discover the exact API surface — Robinhood is actively adding more tools.
 
+For the latest tool list, see [Robinhood's official docs](https://robinhood.com/us/en/support/articles/trading-with-your-agent/).
+
 ## Security Notes
 
 - **Separate account**: The Agentic account is separate from your main Robinhood account — fund it with what you're comfortable with the agent managing
