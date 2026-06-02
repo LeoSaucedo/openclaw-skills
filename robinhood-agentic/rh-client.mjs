@@ -213,7 +213,9 @@ async function doAuth() {
   saveState(state);
   console.error('');
   console.error('✅ Authenticated successfully!');
-  const expiresMs = normalizeExpiry(tokens.expires_at) || (tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : Date.now() + 3600 * 1000);
+  const expiresMs = tokens.expires_in
+    ? Date.now() + Number(tokens.expires_in) * 1000
+    : Date.now() + 3600 * 1000;
   console.error(`   Access token expires: ${new Date(expiresMs).toISOString()}`);
   if (tokens.refresh_token) {
     console.error('   Refresh token: available');
@@ -230,8 +232,7 @@ async function getClient() {
   }
 
   // Check if token needs refresh
-  const expiresAt = normalizeExpiry(state.tokens.expires_at)
-    || (state.tokens.expires_in && state.savedAt
+  const expiresAt = (state.tokens.expires_in && state.savedAt
       ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000
       : null);
 
@@ -364,8 +365,7 @@ async function cmdStatus() {
     return;
   }
 
-  const expiresAt = normalizeExpiry(state.tokens.expires_at)
-    || (state.tokens.expires_in && state.savedAt
+  const expiresAt = (state.tokens.expires_in && state.savedAt
       ? new Date(state.savedAt).getTime() + state.tokens.expires_in * 1000
       : null);
 
