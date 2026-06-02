@@ -7,7 +7,7 @@ metadata:
   openclaw:
     emoji: "📈"
     requires:
-      bins: ["node"]
+      bins: ["node", "python3"]
       skills: ["robinhood-agentic"]
 ---
 
@@ -38,7 +38,7 @@ Two crons required, both pointing at this skill:
 **Morning Routine** (M-F, 9:30 AM ET):
 ```
 schedule: "30 9 * * 1-5" (America/New_York)
-payload: "Read skills/ada-trader/SKILL.md and execute the Morning Routine. Post to your trading channel."
+payload: "Read the ada-trader skill and execute the Morning Routine. Post to your trading channel."
 delivery: announce to your trading channel
 timeout: 300s, thinking: medium
 ```
@@ -46,14 +46,14 @@ timeout: 300s, thinking: medium
 **Afternoon Routine** (M-F, 3:30 PM ET):
 ```
 schedule: "30 15 * * 1-5" (America/New_York)
-payload: "Read skills/ada-trader/SKILL.md and execute the Afternoon Routine. Post to your trading channel."
+payload: "Read the ada-trader skill and execute the Afternoon Routine. Post to your trading channel."
 delivery: announce to your trading channel
 timeout: 300s, thinking: minimal
 ```
 
 ### 3. Customize
 
-Adjust `CHUNK_SIZE` below to match your capital. Default: $50 (10 chunks on a $500 account).
+Adjust the chunk size (default: $50) and max positions in the Strategy Parameters table below to match your capital. The Morning Routine buys using `dollar_amount`—edit that value to change your per-trade size.
 
 ---
 
@@ -75,7 +75,7 @@ Pick fresh tickers each morning — no static watchlist. Use web_search for:
 - "top pre-market movers today high volume"
 - "stocks with biggest pre-market gains today"
 
-Compile 10-15 tickers moving ≥ ±0.5% in pre-market. Prefer stocks with clear catalysts (earnings, analyst upgrades, sector momentum, news). Flat market = fewer picks.
+Compile 10-15 tickers with an absolute move of at least ±0.5% in pre-market. Prefer stocks with clear catalysts (earnings, analyst upgrades, sector momentum, news). Flat market = fewer picks.
 
 ---
 

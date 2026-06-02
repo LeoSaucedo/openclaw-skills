@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """
 Stock scanner: gets quotes on supplied tickers and ranks by momentum.
-Usage: python3 scanner.py [ACCOUNT_NUMBER]
-  - Reads tickers from stdin (comma-separated or one per line)
-  - Calls Robinhood MCP get_equity_quotes
-  - Ranks by % change from prior close
-  - Outputs top 5 as JSON
+Usage: read tickers from stdin (comma-separated or one per line), outputs JSON
 """
 
 import json, sys, subprocess, os
 
 MCP = os.path.expanduser("~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs")
+
 
 def get_quotes(tickers):
     """Call Robinhood MCP for real-time quotes on up to 20 symbols."""
@@ -20,25 +17,25 @@ def get_quotes(tickers):
         capture_output=True, text=True, timeout=30
     )
     if result.returncode != 0:
-        print(json.dumps({"error": f"MCP failed: {result.stderr.strip()}"}))
-        sys.exit(1)
+        return {"error": f"MCP failed: {result.stderr.strip()}"}
 
     raw = result.stdout.strip()
     if not raw:
-        print(json.dumps({"error": "Empty MCP response"}))
-        sys.exit(1)
+        return {"error": "Empty MCP response"}
 
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
-        print(json.dumps({"error": f"JSON parse: {raw[:200]}"}))
-        sys.exit(1)
+        return {"error": f"MCP returned non-JSON: {raw[:200]}"}
 
     # Handle MCP content envelope
     if isinstance(data, dict) and "content" in data:
         for c in data["content"]:
             if c.get("type") == "text":
-                return json.loads(c["text"])
+                try:
+                    return json.loads(c["text"])
+                except json.JSONDecodeError:
+                    return {"error": "MCP content envelope contains non-JSON text"}
     return data
 
 
@@ -46,7 +43,7 @@ def rank(tickers):
     """Score tickers by momentum (% change from prior close)."""
     quotes = get_quotes(tickers)
     if not quotes or "error" in quotes:
-        return []
+        return [], quotes.get("error") if isinstance(quotes, dict) else "Unknown error"
 
     rankings = []
     for sym, q in quotes.items():
@@ -54,11 +51,13 @@ def rank(tickers):
             continue
         last = float(q.get("last_trade_price", 0) or 0)
         prior = float(q.get("prior_close", 0) or 0)
-        if prior <= 0 or abs(last - prior) / prior < 0.003:
-            continue  # Skip flat tickers (<0.3% move)
+        if prior <= 0 or abs(last - prior) / prior < 0.005:
+            continue  # Skip flat tickers (<0.5% absolute move)
 
         pct = round(((last - prior) / prior) * 100, 2)
-        spread = round((float(q.get("bid_price", 0) or 0) - float(q.get("ask_price", 0) or 0)) / prior * 100, 2)
+        bid = float(q.get("bid_price", 0) or 0)
+        ask = float(q.get("ask_price", 0) or 0)
+        spread = round((ask - bid) / prior * 100, 2) if ask > bid else 0.0
         rankings.append({
             "symbol": sym,
             "price": last,
@@ -69,20 +68,23 @@ def rank(tickers):
         })
 
     rankings.sort(key=lambda x: x["score"], reverse=True)
-    return rankings[:5]
+    return rankings[:5], None
 
 
 if __name__ == "__main__":
     tickers_input = sys.stdin.read().strip()
     if not tickers_input:
-        print(json.dumps({"error": "No tickers provided"}))
+        print(json.dumps({"error": "No tickers provided — pipe comma-separated symbols to stdin"}))
         sys.exit(1)
 
     # Accept comma-separated or line-delimited
     tickers = [t.strip().upper() for t in tickers_input.replace("\n", ",").split(",") if t.strip()]
     if not tickers:
-        print(json.dumps({"error": "No valid tickers"}), file=sys.stderr)
+        print(json.dumps({"error": "No valid tickers after parsing"}))
         sys.exit(1)
 
-    top = rank(tickers)
-    print(json.dumps({"top": top, "scanned": len(tickers)}))
+    top, err = rank(tickers)
+    result = {"top": top, "scanned": len(tickers)}
+    if err:
+        result["error"] = err
+    print(json.dumps(result))
