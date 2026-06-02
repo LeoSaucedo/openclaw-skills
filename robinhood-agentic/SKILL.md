@@ -18,7 +18,7 @@ The MCP client (`rh-client.mjs`) handles OAuth 2.1 PKCE authentication to `https
 
 1. Robinhood Agentic access (still rolling out — you'll get an email)
 2. A dedicated Agentic account (created during OAuth flow)
-3. Node.js (already on the VPS)
+3. Node.js ≥ 18
 
 ### Install Dependencies
 

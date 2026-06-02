@@ -219,7 +219,7 @@ async function doAuth() {
 async function getClient() {
   let state = loadState();
   if (!state || !state.tokens) {
-    console.error('❌ Not authenticated. Run: rh-client auth');
+    console.error('❌ Not authenticated. Run: node rh-client.mjs auth');
     process.exit(1);
   }
 
@@ -229,7 +229,7 @@ async function getClient() {
       : null);
 
   if (!expiresAt) {
-    console.error('❌ Cannot determine token expiry. Re-authenticate: rh-client auth');
+    console.error('❌ Cannot determine token expiry. Re-authenticate: node rh-client.mjs auth');
     process.exit(1);
   }
 
@@ -262,7 +262,7 @@ async function getClient() {
       console.error('❌ Token refresh failed:', err.message);
       // If the token is already expired, continuing is pointless
       if (Date.now() > expiresAt) {
-        console.error('   Access token is expired and refresh failed. Re-authenticate: rh-client auth');
+        console.error('   Access token is expired and refresh failed. Re-authenticate: node rh-client.mjs auth');
         process.exit(1);
       }
       console.error('   Using existing token (not yet expired)...');
@@ -272,7 +272,7 @@ async function getClient() {
   // Fail fast if token is expired and refresh isn't possible
   if (Date.now() > expiresAt && !state.tokens.refresh_token) {
     console.error('❌ Access token is expired and no refresh token available.');
-    console.error('   Re-authenticate: rh-client auth');
+    console.error('   Re-authenticate: node rh-client.mjs auth');
     process.exit(1);
   }
 
@@ -320,7 +320,12 @@ async function cmdCall(toolName, argsJson) {
       // Read from stdin
       const chunks = [];
       for await (const chunk of process.stdin) chunks.push(chunk);
-      args = JSON.parse(Buffer.concat(chunks).toString());
+      try {
+        args = JSON.parse(Buffer.concat(chunks).toString());
+      } catch (err) {
+        console.error(`❌ Invalid JSON from stdin: ${err.message}`);
+        process.exit(1);
+      }
     } else {
       try {
         args = JSON.parse(argsJson);
