@@ -6,23 +6,24 @@ Collection of OpenClaw skills for API-powered assistant capabilities.
 
 | Skill | Purpose | Directory |
 |---|---|---|
-| deepseek-balance | Check DeepSeek API balance and usage | `deepseek-balance/` |
-| engram-memory | Graph-based long-term memory and relationship tracing | `engram-memory/` |
-| google-maps-directions | Drive time, distance, and route lookups via Google Maps | `google-maps-directions/` |
-| lastfm | Last.fm profile, scrobble, chart, and discovery queries | `lastfm/` |
-| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `robinhood-agentic/` |
-| soundcloud | Search tracks, user info, and playlist operations on SoundCloud | `soundcloud/` |
-| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress | `wanikani/` |
-| wolfram-alpha | Computational queries via Wolfram Alpha LLM API | `wolfram-alpha/` |
+| deepseek-balance | Check DeepSeek API balance and usage | `skills/deepseek-balance` |
+| engram-memory | Graph-based long-term memory and relationship tracing | `skills/engram-memory` |
+| google-maps-directions | Drive time, distance, and route lookups via Google Maps | `skills/google-maps-directions` |
+| lastfm | Last.fm profile, scrobble, chart, and discovery queries | `skills/lastfm` |
+| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `skills/robinhood-agentic` |
+| soundcloud | Search tracks, user info, and playlist operations on SoundCloud | `skills/soundcloud` |
+| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress | `skills/wanikani` |
+| wolfram-alpha | Computational queries via Wolfram Alpha LLM API | `skills/wolfram-alpha` |
 
 ## Repository Structure
 
 ```text
-<skill-name>/
-  SKILL.md        # Skill manifest + usage instructions
-  README.md       # Skill-specific quick documentation
-  scripts/        # Executable helper scripts
-  references/     # API references and troubleshooting docs
+skills/
+  <skill-name>/
+    SKILL.md        # Skill manifest + usage instructions
+    README.md       # Skill-specific quick documentation
+    scripts/        # Executable helper scripts
+    references/     # API references and troubleshooting docs
 ```
 
 ## Skill Usage Pattern

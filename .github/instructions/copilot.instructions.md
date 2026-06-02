@@ -42,7 +42,7 @@ Skills live at the repo root (NOT inside a `skills/` directory):
   package.json    # If the skill is a Node.js package
 ```
 
-The root README.md references skills by their directory name (e.g., `robinhood-agentic/`), not with a `skills/` prefix.
+The root README.md references skills by their `skills/<name>` path (e.g., `skills/robinhood-agentic/`), matching the repo's consistent table format.
 
 ## Package Skills (Node.js)
 
