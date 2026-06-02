@@ -133,7 +133,6 @@ async function doAuth() {
   const input = await prompt('Redirect URL or code: ');
 
   let authorizationCode;
-  let isRawCode = false;
 
   // Try parsing as a URL regardless of format
   if (/^[?&]?code=/.test(input) || input.startsWith('http')) {
@@ -160,7 +159,6 @@ async function doAuth() {
   if (!authorizationCode) {
     // Raw code paste (no URL structure detected)
     authorizationCode = input;
-    isRawCode = true;
     console.error('⚠️  Raw code detected — state validation skipped. Full URL paste is preferred.');
   }
 

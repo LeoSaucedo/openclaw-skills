@@ -1,2 +1,3 @@
 node_modules/
 .rh-tokens.json
+.rh-tokens.json.tmp
