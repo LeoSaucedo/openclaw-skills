@@ -12,17 +12,17 @@ Collection of OpenClaw skills for API-powered assistant capabilities.
 | lastfm | Last.fm profile, scrobble, chart, and discovery queries | `lastfm/` |
 | robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `robinhood-agentic/` |
 | soundcloud | Search tracks, user info, and playlist operations on SoundCloud | `soundcloud/` |
+| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress | `wanikani/` |
 | wolfram-alpha | Computational queries via Wolfram Alpha LLM API | `wolfram-alpha/` |
 
 ## Repository Structure
 
 ```text
-skills/
-  <skill-name>/
-    SKILL.md        # Skill manifest + usage instructions
-    README.md       # Skill-specific quick documentation
-    scripts/        # Executable helper scripts
-    references/     # API references and troubleshooting docs
+<skill-name>/
+  SKILL.md        # Skill manifest + usage instructions
+  README.md       # Skill-specific quick documentation
+  scripts/        # Executable helper scripts
+  references/     # API references and troubleshooting docs
 ```
 
 ## Skill Usage Pattern

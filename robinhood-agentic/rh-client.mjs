@@ -211,7 +211,8 @@ async function doAuth() {
   saveState(state);
   console.error('');
   console.error('✅ Authenticated successfully!');
-  console.error(`   Access token expires: ${new Date(tokens.expires_at || Date.now() + (tokens.expires_in || 3600) * 1000).toISOString()}`);
+  const expiresMs = normalizeExpiry(tokens.expires_at) || (tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : Date.now() + 3600 * 1000);
+  console.error(`   Access token expires: ${new Date(expiresMs).toISOString()}`);
   if (tokens.refresh_token) {
     console.error('   Refresh token: available');
   }
@@ -233,7 +234,7 @@ async function getClient() {
       : null);
 
   if (!expiresAt) {
-    console.error('�� Cannot determine token expiry. Re-authenticate: rh-client auth');
+    console.error('❌ Cannot determine token expiry. Re-authenticate: rh-client auth');
     process.exit(1);
   }
 
