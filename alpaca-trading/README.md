@@ -1,6 +1,6 @@
 # alpaca-trading
 
-Interact with an Alpaca paper trading account from OpenClaw — check balance, view positions, place orders, and manage holdings.
+Interact with an Alpaca trading account from OpenClaw — check balance, view positions, place orders, and manage holdings. Supports both paper and live trading via `ALPACA_ENV`.
 
 ## Files
 
@@ -30,5 +30,10 @@ node scripts/alpaca.mjs account
 
 ## Required Environment Variables
 
-- `ALPACA_API_KEY` — Alpaca paper trading API key
-- `ALPACA_API_SECRET` — Alpaca paper trading API secret
+- `ALPACA_API_KEY` — Alpaca API key ID (also accepts `APCA_API_KEY_ID`)
+- `ALPACA_API_SECRET` — Alpaca API secret key (also accepts `APCA_API_SECRET_KEY`)
+- `ALPACA_ENV` — Set to `"live"` for live trading (defaults to paper)
+
+## Confirmation
+
+Mutating commands (`buy`, `sell`, `close`, `close-all`) require confirmation. Pass `--yes`/`-y` or set `ALPACA_CONFIRM=1` to auto-approve.

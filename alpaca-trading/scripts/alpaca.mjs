@@ -22,7 +22,12 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function loadEnv() {
-  // Only read the specific vars we need
+  // Support both Alpaca SDK standard names and our shorthand
+  const KEY = process.env.ALPACA_API_KEY || process.env.APCA_API_KEY_ID;
+  const SECRET = process.env.ALPACA_API_SECRET || process.env.APCA_API_SECRET_KEY;
+  if (KEY) process.env.ALPACA_API_KEY = KEY;
+  if (SECRET) process.env.ALPACA_API_SECRET = SECRET;
+  
   const NEEDED = ["ALPACA_API_KEY", "ALPACA_API_SECRET"];
 
   // If already set in the environment, nothing to load
@@ -30,9 +35,7 @@ function loadEnv() {
 
   const candidates = [
     path.join(os.homedir(), ".openclaw", ".env"),
-    path.join(__dirname, "..", "..", "..", "..", "..", ".env"),
-    path.join(__dirname, "..", "..", "..", ".env"),
-    path.join(__dirname, "..", "..", "alpaca-trading", ".env"),
+    path.join(__dirname, "..", ".env"),
     path.join(__dirname, ".env"),
   ];
   for (const f of candidates) {
@@ -43,22 +46,27 @@ function loadEnv() {
       if (!t || t.startsWith("#")) continue;
       const eq = t.indexOf("=");
       if (eq === -1) continue;
-      const k = t.slice(0, eq);
-      // Only load the vars we need; skip unrelated keys
-      if (!NEEDED.includes(k)) continue;
-      if (process.env[k] !== undefined) continue;
-      let v = t.slice(eq + 1);
+      const k = t.slice(0, eq).trim();
+      if (!NEEDED.includes(k) && k !== "APCA_API_KEY_ID" && k !== "APCA_API_SECRET_KEY") continue;
+      // Map SDK names to our internal names
+      const targetKey = (k === "APCA_API_KEY_ID") ? "ALPACA_API_KEY" : (k === "APCA_API_SECRET_KEY") ? "ALPACA_API_SECRET" : k;
+      if (process.env[targetKey] !== undefined) continue;
+      let v = t.slice(eq + 1).trim();
       if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'")))
         v = v.slice(1, -1);
-      process.env[k] = v;
+      process.env[targetKey] = v;
     }
     // Stop early if both vars are found
     if (NEEDED.every((k) => process.env[k])) return;
   }
 }
 
-const TRADING_BASE = "https://paper-api.alpaca.markets/v2";
-const DATA_BASE = "https://data.alpaca.markets/v2";
+const TRADING_BASE = process.env.ALPACA_ENV === "live"
+  ? "https://api.alpaca.markets/v2"
+  : "https://paper-api.alpaca.markets/v2";
+const DATA_BASE = process.env.ALPACA_ENV === "live"
+  ? "https://data.alpaca.markets/v2"
+  : "https://data.alpaca.markets/v2";
 
 async function alpacaRequest(endpoint, method = "GET", body = null, dataApi = false) {
   const base = dataApi ? DATA_BASE : TRADING_BASE;
@@ -236,8 +244,9 @@ async function cmdCloseAll() {
 }
 
 // ── Confirmation guard for mutating commands ──────────────
+const MUTATING_COMMANDS = ["buy", "sell", "close", "close-all"];
 function confirmMutation() {
-  if (process.argv.includes("--yes") || process.argv.includes("-y") || process.env.ALPACA_CONFIRM === "1")
+  if (process.argv.some(a => a === "--yes" || a === "-y") || process.env.ALPACA_CONFIRM === "1")
     return;
   console.error("ERROR: Confirmation required for mutating commands. Pass --yes or set ALPACA_CONFIRM=1.");
   process.exit(1);

@@ -1,6 +1,6 @@
 ---
 name: alpaca-trading
-description: Check Alpaca paper trading account balance, positions, ticker stats, place buy/sell orders, view order history, and close positions. Use when the user asks to view their trading account, check their P&L, place a trade, sell a position, get a stock quote, or manage their Alpaca portfolio.
+description: Check Alpaca trading account balance, positions, ticker stats, place buy/sell orders, view order history, and close positions. Supports both paper and live trading via ALPACA_ENV. Use when the user asks to view their trading account, check their P&L, place a trade, sell a position, get a stock quote, or manage their Alpaca portfolio.
 metadata:
   author: github.com/LeoSaucedo
 ---
@@ -32,8 +32,13 @@ Set these environment variables (or place them in a `.env` file — see the scri
 
 | Variable | Description |
 |----------|-------------|
-| `ALPACA_API_KEY` | Alpaca paper trading API key ID |
-| `ALPACA_API_SECRET` | Alpaca paper trading API secret key |
+| `ALPACA_API_KEY` | Alpaca API key ID (also accepts `APCA_API_KEY_ID`) |
+| `ALPACA_API_SECRET` | Alpaca API secret key (also accepts `APCA_API_SECRET_KEY`) |
+| `ALPACA_ENV` | Set to `"live"` for live trading (defaults to paper) |
+
+## Confirmation Guard
+
+Mutating commands (`buy`, `sell`, `close`, `close-all`) require explicit confirmation. Pass `--yes`/`-y` or set `ALPACA_CONFIRM=1` to skip the prompt.
 
 The script will fail with a clear error if either is missing.
 
@@ -42,4 +47,4 @@ The script will fail with a clear error if either is missing.
 1. Resolve `<skill_dir>` to the absolute path of this skill's directory
 2. Run the script and capture stdout (JSON) and stderr
 3. Format the JSON output into a readable message for the user — use **Discord-friendly formatting** (no markdown tables on Discord, use lists instead)
-4. Always confirm before placing orders (buy/sell/close/close-all) — show what will happen and ask the user to confirm
+4. Before placing orders (`buy`, `sell`, `close`, `close-all`): always confirm with the user what will happen. To auto-approve, pass `--yes` or set `ALPACA_CONFIRM=1`
