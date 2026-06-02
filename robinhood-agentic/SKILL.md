@@ -74,6 +74,8 @@ Token refresh happens automatically when the access token is within 5 minutes of
 
 After auth, OpenClaw can call any tool Robinhood exposes through the MCP server. Based on official docs, the available tools are:
 
+> **Read-only tools** (portfolio, positions, quotes, etc.) work on **all** your Robinhood accounts. **Trading tools** (place/cancel orders) are restricted to the dedicated Agentic account — fund it separately.
+
 ### Account & Portfolio
 
 | Tool | Description |

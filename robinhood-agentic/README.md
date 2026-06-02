@@ -49,7 +49,8 @@ echo '{"symbol":"AAPL"}' | node rh-client.mjs call get_equity_quotes -
 ## Requirements
 
 - Robinhood Agentic access (rolling out — wait for email)
-- A dedicated Agentic account (separate from your main Robinhood)
+- A dedicated Agentic account (separate from your main Robinhood) — trading tools are restricted to this account
+- Read-only tools (portfolio, positions, quotes) work on **all** your Robinhood accounts
 - Node.js ≥ 18
 
 ## Security
