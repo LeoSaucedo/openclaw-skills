@@ -22,7 +22,7 @@ def safe_float(val, default=0.0):
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_MCP = os.path.expanduser("~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs")
-LOCAL_MCP = os.path.join(SCRIPT_DIR, "..", "..", "robinhood-agentic", "rh-client.mjs")
+LOCAL_MCP = os.path.normpath(os.path.join(SCRIPT_DIR, "..", "..", "robinhood-agentic", "rh-client.mjs"))
 MCP = os.environ.get("MCP_CLIENT_PATH", LOCAL_MCP if os.path.exists(LOCAL_MCP) else DEFAULT_MCP)
 
 
@@ -80,7 +80,7 @@ def rank(tickers):
             continue
         last = safe_float(q.get("last_trade_price"))
         prior = safe_float(q.get("prior_close"))
-        if prior <= 0 or abs(last - prior) / prior < 0.005:
+        if last <= 0 or prior <= 0 or abs(last - prior) / prior < 0.005:
             continue  # Skip flat tickers (<0.5% absolute move)
 
         pct = round(((last - prior) / prior) * 100, 2)
