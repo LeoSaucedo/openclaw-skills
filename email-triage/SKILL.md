@@ -254,7 +254,13 @@ DECISION ∈ {BLACKLIST, WHITELIST, KEPT, WAITING}
 
 **2. For each entry in log.jsonl, per account:**
 
-Check current label state:
+First, resolve the waiting label's internal ID for this account (gog returns IDs like `Label_6` for named labels):
+```bash
+GOG_OUTPUT=$(gog gmail labels list --account <email> 2>/dev/null)
+WAITING_ID=$(echo "$GOG_OUTPUT" | grep "<waitingLabel>" | awk '{print $1}')
+```
+
+Then check the thread's current label state:
 ```bash
 gog gmail thread get <threadId> --json --no-input --account <email> 2>/dev/null | python3 -c "
 import sys,json
@@ -264,15 +270,15 @@ print(json.dumps({'labels':msgs[0].get('labelIds',[])}))
 "
 ```
 
-**Compare labels against logged decision, using that account's waitingLabel:**
+**Compare the returned `labelIds` array against the logged decision, using `$WAITING_ID` for the waiting list check:**
 
 | Logged | Should Have | If Instead Has | Action |
 |---|---|---|---|
-| KEPT | INBOX | NOT INBOX, or has waitingLabel | Wrong keep → demote concept |
-| WAITING | waitingLabel, NOT INBOX | Has INBOX | Wrong filter → promote concept |
-| WAITING | waitingLabel | Has TRASH | Correct → reinforce concept |
-| KEPT | INBOX | UNREAD gone (read) | Good → reinforce concept lightly |
-| KEPT | INBOX | Has SENT (replied) | Very good → reinforce concept strongly |
+| KEPT | `INBOX` in labels | `INBOX` NOT in labels, or `$WAITING_ID` in labels | Wrong keep → demote concept |
+| WAITING | `$WAITING_ID` in labels, `INBOX` NOT in labels | `INBOX` in labels | Wrong filter → promote concept |
+| WAITING | `$WAITING_ID` in labels | `TRASH` in labels | Correct → reinforce concept |
+| KEPT | `INBOX` in labels | `UNREAD` NOT in labels (read) | Good → reinforce concept lightly |
+| KEPT | `INBOX` in labels | `SENT` in labels (replied) | Very good → reinforce concept strongly |
 
 **3. Analyze the email's concept:**
 
