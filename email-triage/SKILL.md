@@ -73,7 +73,7 @@ Read these workspace files (small, fast):
 
 ### 2. Compute Search Window (per account)
 From `lastRun` in state, keyed per account:
-- State tracks `lastRun` as `{"<account>": "<ISO UTC>"}`
+- State tracks `lastRun` as a map: `{"lastRun": {"<account>": "<ISO UTC>"}}`
 - Null or >7d → `newer_than:1d`
 - Otherwise → `hoursSince = ceil((now − lastRun) / 3600000)`, round up to: `1h` → `2h` → `3h` → `6h` → `12h` → `1d` → `2d` → `3d` → `1w`
 - **Minimum:** `newer_than:1h`
@@ -208,7 +208,7 @@ gog gmail labels modify <threadId> --add "<waitingLabel>" --remove INBOX --no-in
 Log: `{"ts":"<ISO8601>","decision":"WAITING","threadId":"<id>","sender":"<email>","subject":"<text>","account":"<email>","reason":"<reason>"}`
 
 ### 6. Update State (per account)
-Write `email-triage/state.json`: update this account's `lastRun` key to current ISO UTC time, increment global counters. If no emails were processed for this account, leave its `lastRun` unchanged (retains the old search window for next run).
+Write `email-triage/state.json`: update this account's `lastRun` key to current ISO UTC time — specifically `state.lastRun[thisAccountEmail] = "<ISO UTC>"`. Increment global counters. If no emails were processed for this account, leave its `lastRun` unchanged (retains the old search window for next run).
 
 Write `email-triage/seen.json`:
 - Add every thread ID processed this run with current timestamp, keyed by account
@@ -331,17 +331,17 @@ db.execute('''
 
 **After all corrections, apply decay and prune:**
 ```python
-# Apply decay
-meta = db.execute("SELECT key, value FROM metadata WHERE key IN ('cycle', 'decay_rate')").fetchall()
+# Apply decay to scores AND confidence
+meta = db.execute("SELECT key, value FROM metadata WHERE key IN ('cycle', 'decay_rate', 'version')").fetchall()
 meta_dict = dict(meta)
 decay = float(meta_dict.get('decay_rate', 0.97))
 cycle = int(meta_dict.get('cycle', 0))
 
-db.execute('UPDATE domains SET score = score * ?', (decay,))
-db.execute('UPDATE patterns SET score = score * ?', (decay,))
-db.execute('UPDATE essence_types SET score = score * ?', (decay,))
+db.execute('UPDATE domains SET score = score * ?, confidence = confidence * ?', (decay, decay))
+db.execute('UPDATE patterns SET score = score * ?, confidence = confidence * ?', (decay, decay))
+db.execute('UPDATE essence_types SET score = score * ?, confidence = confidence * ?', (decay, decay))
 
-# Prune low-confidence entries
+# Prune low-confidence entries (decay ensures old/unused patterns eventually fall below threshold)
 db.execute('DELETE FROM patterns WHERE confidence < 0.3')
 db.execute('DELETE FROM domains WHERE confidence < 0.3')
 db.execute('DELETE FROM essence_types WHERE confidence < 0.3')

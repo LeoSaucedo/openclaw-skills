@@ -116,6 +116,7 @@ CREATE TABLE metadata (
 The DB will be seeded with initial metadata on first feedback sweep:
 - `cycle`: "0"
 - `decay_rate`: "0.97"
+- `version`: "1"
 
 To create the DB manually (optional, for testing):
 ```bash
@@ -144,6 +145,7 @@ CREATE TABLE metadata (
 );
 INSERT OR IGNORE INTO metadata (key, value) VALUES ('cycle', '0');
 INSERT OR IGNORE INTO metadata (key, value) VALUES ('decay_rate', '0.97');
+INSERT OR IGNORE INTO metadata (key, value) VALUES ('version', '1');
 SQL
 ```
 
@@ -154,7 +156,7 @@ Stores learned keyword weights. Each keyword extracted from email subjects gets 
 - **keyword**: Lowercase word from subject (PRIMARY KEY)
 - **score**: Sliding weight — positive = keep signal, negative = waiting signal
 - **updates**: How many times this keyword has been scored
-- **confidence**: 0-1 confidence of the score (starts at 0.55, maxes at 1.0)
+- **confidence**: 0-1 confidence of the score (schema default is 0.5; feedback sweep inserts with 0.55 — confidence also decays alongside scores each cycle to eventually prune unused entries)
 
 ### domains
 Stores learned sender domain weights.
@@ -174,6 +176,7 @@ Stores learned email category weights.
 Key-value store for operational state.
 - **cycle**: Number of feedback sweep cycles completed
 - **decay_rate**: Multiplier applied to all scores per cycle (default 0.97)
+- **version**: Schema version (set to "1" on first DB creation)
 
 ## Log Format (log.jsonl / audit.jsonl)
 
