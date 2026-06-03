@@ -5,7 +5,7 @@ Gmail inbox triage automation with a self-learning SQLite pattern database. Main
 ## Quick Start
 
 1. **Set up accounts:** Create `email-triage/accounts.json` at the workspace root with your Gmail accounts and waiting list label names (see INSTALL.md for format).
-2. **Seed data files:** Copy the seed templates from [INSTALL.md](INSTALL.md) to create `state.json`, `seen.json`, `whitelist.json`, `blacklist.json`.
+2. **Seed data files:** Copy the seed templates from [INSTALL.md](INSTALL.md) to create `state.json`, `seen.json`, `whitelist.json`, `blacklist.json` in `email-triage/` at the workspace root.
 3. **Create the DB:** The `learned.db` SQLite database is auto-created on the first feedback sweep. See [INSTALL.md](INSTALL.md#step-3-create-learneddb) for the schema.
 4. **Set up cron jobs:** Two OpenClaw cron jobs — triage (every 45 min) and feedback sweep (daily). See [INSTALL.md](INSTALL.md#step-4-set-up-cron-jobs) for the full JSON payloads.
 

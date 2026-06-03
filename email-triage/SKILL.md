@@ -257,16 +257,20 @@ DECISION ∈ {BLACKLIST, WHITELIST, KEPT, WAITING}
 First, resolve the waiting label's internal ID for this account (gog returns IDs like `Label_6` for named labels):
 ```bash
 GOG_OUTPUT=$(gog gmail labels list --account <email> 2>/dev/null)
-WAITING_ID=$(echo "$GOG_OUTPUT" | grep "<waitingLabel>" | awk '{print $1}')
+WAITING_ID=$(echo "$GOG_OUTPUT" | grep -F "<waitingLabel>" | awk '{print $1}')
 ```
 
 Then check the thread's current label state:
 ```bash
 gog gmail thread get <threadId> --json --no-input --account <email> 2>/dev/null | python3 -c "
 import sys,json
-d=json.load(sys.stdin)
-msgs=d['thread']['messages']
-print(json.dumps({'labels':msgs[0].get('labelIds',[])}))
+try:
+    d=json.load(sys.stdin)
+    msgs=d.get('thread',{}).get('messages',[])
+    labels=msgs[0].get('labelIds',[]) if msgs else []
+except Exception:
+    labels=[]
+print(json.dumps({'labels':labels}))
 "
 ```
 
