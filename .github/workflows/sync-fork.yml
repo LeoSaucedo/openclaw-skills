@@ -1,0 +1,25 @@
+name: Sync fork with upstream
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Every Monday 6 AM ET
+  workflow_dispatch:       # Allow manual trigger too
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync with upstream
+        run: |
+          git remote add upstream https://github.com/LeoSaucedo/openclaw-skills.git
+          git fetch upstream master
+          git checkout master
+          git merge upstream/master
+          git push origin master
