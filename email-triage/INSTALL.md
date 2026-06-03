@@ -6,10 +6,10 @@ First-time setup for the email triage skill.
 
 ```
 email-triage/
-├── SKILL.md              # The skill definition (lives in skills/email-triage/ but works from workspace root)
+├── SKILL.md              # The skill definition (this file, lives in skills/email-triage/ in the workspace)
 ├── accounts.json         # [REQUIRED] Email accounts to triage (see below)
 ├── state.json            # [AUTO] Tracks lastRun timestamp + counters
-├── seen.json             # [AUTO] Thread deduplication per account, auto-prunes >4h
+├── seen.json             # [AUTO] Thread deduplication per account, auto-prunes >24h
 ├── whitelist.json        # [USER-EDITABLE] Senders/domains that ALWAYS stay in inbox
 ├── blacklist.json        # [USER-EDITABLE] Senders/domains that ALWAYS go to waiting list
 ├── log.jsonl             # [AUTO] Working log — last 24h. JSONL format.
@@ -102,13 +102,38 @@ CREATE TABLE metadata (
 );
 ```
 
-The DB will be seeded with initial metadata on first triage run:
+The DB will be seeded with initial metadata on first feedback sweep:
 - `cycle`: "0"
 - `decay_rate`: "0.97"
 
-To create the DB manually:
+To create the DB manually (optional, for testing):
 ```bash
-sqlite3 email-triage/learned.db < email-triage/init.sql
+sqlite3 email-triage/learned.db <<'SQL'
+CREATE TABLE patterns (
+    keyword TEXT PRIMARY KEY,
+    score REAL NOT NULL DEFAULT 0,
+    updates INTEGER NOT NULL DEFAULT 0,
+    confidence REAL NOT NULL DEFAULT 0.5
+);
+CREATE TABLE domains (
+    domain TEXT PRIMARY KEY,
+    score REAL NOT NULL DEFAULT 0,
+    updates INTEGER NOT NULL DEFAULT 0,
+    confidence REAL NOT NULL DEFAULT 0.5
+);
+CREATE TABLE essence_types (
+    name TEXT PRIMARY KEY,
+    score REAL NOT NULL DEFAULT 0,
+    updates INTEGER NOT NULL DEFAULT 0,
+    confidence REAL NOT NULL DEFAULT 0.5
+);
+CREATE TABLE metadata (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+INSERT OR IGNORE INTO metadata (key, value) VALUES ('cycle', '0');
+INSERT OR IGNORE INTO metadata (key, value) VALUES ('decay_rate', '0.97');
+SQL
 ```
 
 ## Database Schema Detail
@@ -223,5 +248,5 @@ sqlite3 email-triage/learned.db ".tables"
 cat email-triage/state.json | python3 -m json.tool > /dev/null
 
 # Gog works for each account
-gog email search "is:unread" --max 1 --account you@gmail.com
+gog gmail search "is:unread" --max 1 --account you@gmail.com
 ```

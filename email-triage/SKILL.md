@@ -1,11 +1,23 @@
+---
+name: email-triage
+description: Gmail inbox triage with self-learning SQLite pattern database. Multi-account support with whitelist/blacklist, keyword-domain-essence scoring, and daily feedback sweep learning.
+metadata:
+  author: github.com/LeoSaucedo
+  openclaw:
+    requires:
+      bins: ["python3", "sqlite3", "gog"]
+---
+
 # Email Triage
 
 AI gatekeeper — important stays in inbox, noise goes to a configurable waiting label. Self-learning from feedback sweeps.
 
 > **First-time setup:** See [INSTALL.md](INSTALL.md) for DB schema, folder structure, seed files, and cron job configuration.
+>
+> **Repo note:** This file lives at `email-triage/SKILL.md` in the skills repo. Cron jobs reference it from the workspace root as `skills/email-triage/SKILL.md`.
 
 ## Working Directory
-Isolated agent cwd = workspace root. All paths relative to that root. Files live in `email-triage/`.
+Isolated agent cwd = workspace root (`/home/ada/.openclaw/workspace`). All paths in cron payloads and this file are relative to that root. Data files live in `email-triage/`. The SKILL.md lives at `skills/email-triage/SKILL.md` (a git checkout of this repo into the workspace skills/ folder).
 
 ## Architecture
 Two cron jobs:
@@ -21,7 +33,7 @@ Cron every 45 min → isolated agent reads this skill and executes Steps 1-8.
 |---|---|---|---|
 | `email-triage/accounts.json` | Step 0 | No | Which accounts to check + waiting-label name per account |
 | `email-triage/state.json` | Step 1 | Step 6 | `lastRun` + counters |
-| `email-triage/seen.json` | Step 1 | Step 6 | Thread deduplication — `{"id":{"account":"threadId"}}` |
+| `email-triage/seen.json` | Step 1 | Step 6 | Thread deduplication per account — `{"<account>": {"<threadId>": {"ts": "..."}}}` |
 | `email-triage/whitelist.json` | Step 1 | No | Hard keep rules — `{"senders":[],"domains":[]}` |
 | `email-triage/blacklist.json` | Step 1 | No | Hard filter rules — `{"senders":[],"domains":[]}` |
 | `email-triage/learned.db` | Step 4d (query per email) | No (feedback cron writes) | Pattern weights (domain scores + keyword scores + essence types) — SQLite |
@@ -59,8 +71,9 @@ Read these workspace files (small, fast):
 **Do NOT load learned.db upfront.** Query it per-email in step 4d.
 **Do NOT load USER.md or MEMORY.md here** — defer to step 4e AI-eval path only.
 
-### 2. Compute Search Window
-From `lastRun` in state:
+### 2. Compute Search Window (per account)
+From `lastRun` in state, keyed per account:
+- State tracks `lastRun` as `{"<account>": "<ISO UTC>"}`
 - Null or >7d → `newer_than:1d`
 - Otherwise → `hoursSince = ceil((now − lastRun) / 3600000)`, round up to: `1h` → `2h` → `3h` → `6h` → `12h` → `1d` → `2d` → `3d` → `1w`
 - **Minimum:** `newer_than:1h`
@@ -91,6 +104,8 @@ WHITELIST → keep in inbox, log, continue
 ```
 
 **4d. Score against learned patterns** (query `email-triage/learned.db` per email — do NOT load entire DB):
+
+**First-run:** If `learned.db` does not exist, skip to AI evaluation (4e). The DB will be created on the first feedback sweep.
 
 Extract sender domain (everything after `@` in the from address) and tokenize the subject into lowercase keywords (filter stop words: a, an, the, and, or, but, in, on, at, to, for, of, with, by, from, is, are, was, were, be, been, being, have, has, had, do, does, did, will, would, can, could, shall, should, may, might, must, i, you, he, she, it, we, they, me, him, her, us, them, my, your, his, its, our, their, this, that, these, those, not, no, nor, so, if, than, too, very, just, also, about, up, out, when, where, how, all, both, each, every, any, few, more, most, other, some, such, only, own, same, new, now, then, here, there).
 
@@ -123,6 +138,7 @@ print(combined)
 
 **Only query the DB for patterns matching this specific email's keywords** — never load the entire DB into context.
 
+The combined learned score = domain_score + keyword_score. If the score is:
 - Combined ≤ −2.0 → strong WAITING signal → move, log, continue
 - Combined ≥ 2.0 → strong KEEP signal → keep, log, continue
 - Otherwise → proceed to AI evaluation
@@ -174,7 +190,7 @@ Write `email-triage/state.json`: update `lastRun` (ISO UTC), increment counters.
 
 Write `email-triage/seen.json`:
 - Add every thread ID processed this run with current timestamp, keyed by account
-- Prune entries older than 4 hours
+- Prune entries older than 24 hours (KEEP leaves threads unread, so keep seen entries long enough to avoid reprocessing)
 - Structure: `{"<account>": {"<threadId>": {"ts": "2026-01-01T00:00:00Z"}}}`
 
 ### 7. Log Decisions
@@ -313,6 +329,6 @@ db.execute("INSERT OR REPLACE INTO metadata (key, value) VALUES ('cycle', ?)", (
 db.commit()
 ```
 
-**When the triage cron scores an email in Step 4d**, it combines all three dimensions: domain score + cumulative keyword score + essence category score. The combined score determines the learned signal strength (≤ −2.0 → WAITING, ≥ 2.0 → KEEP).
+**When the triage cron scores an email in Step 4d**, it combines domain + keyword scores. The combined score determines the learned signal strength (≤ −2.0 → WAITING, ≥ 2.0 → KEEP). Essence types are tracked for feedback learning but are not part of the triage scoring — they reinforce domain/keyword weights during feedback sweeps.
 
 **5. Exit silently. Never alert the user.**
