@@ -144,7 +144,7 @@ print(combined)
 
 **Only query the DB for patterns matching this specific email** — never load the entire DB into context.
 
-**Infer the essence type** from the subject, sender, and labels before scoring. Known types tracked in the DB:
+**Infer the essence type** from the subject, sender, and labels before scoring. Known types currently in the DB (this list is **not exhaustive** — new types are created dynamically during feedback sweeps when an email doesn't match an existing category):
 - `marketing_promo` — promotional emails, sales, discounts
 - `newsletter` — recurring newsletters, digests, roundups
 - `bank_notification` — bank alerts, credit card notices, payment confirmations
