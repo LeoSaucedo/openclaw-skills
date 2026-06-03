@@ -43,9 +43,9 @@ delivery: announce to your trading channel
 timeout: 600s, thinking: medium
 ```
 
-**Afternoon Routine** (M-F, 3:30 PM ET):
+**Afternoon Routine** (M-F, 3:45 PM ET):
 ```
-schedule: "30 15 * * 1-5" (America/New_York)
+schedule: "45 15 * * 1-5" (America/New_York)
 payload: "Read the ada-trader skill and execute the Afternoon Routine. Post to your trading channel."
 delivery: announce to your trading channel
 timeout: 600s, thinking: minimal
