@@ -7,6 +7,7 @@ Collection of OpenClaw skills for API-powered assistant capabilities.
 | Skill | Purpose | Directory |
 |---|---|---|
 | deepseek-balance | Check DeepSeek API balance and usage | `skills/deepseek-balance` |
+| email-triage | Gmail inbox triage with self-learning SQLite pattern database | `skills/email-triage` |
 | engram-memory | Graph-based long-term memory and relationship tracing | `skills/engram-memory` |
 | google-maps-directions | Drive time, distance, and route lookups via Google Maps | `skills/google-maps-directions` |
 | lastfm | Last.fm profile, scrobble, chart, and discovery queries | `skills/lastfm` |
