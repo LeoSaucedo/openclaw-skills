@@ -1,6 +1,6 @@
 ---
 name: email-triage
-description: Gmail inbox triage with self-learning SQLite pattern database. Multi-account support with whitelist/blacklist, keyword-domain-essence scoring, and daily feedback sweep learning.
+description: Gmail inbox triage with self-learning SQLite pattern database. Multi-account support with whitelist/blacklist, keyword-domain-essence scoring, and daily feedback sweep learning. Use when the user asks to check email, triage inbox, or during automated email triage cron runs.
 metadata:
   author: github.com/LeoSaucedo
   openclaw:

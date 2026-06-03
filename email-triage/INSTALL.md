@@ -5,17 +5,25 @@ First-time setup for the email triage skill.
 ## Folder Structure
 
 ```
-email-triage/
-├── SKILL.md              # The skill definition (this file, lives in skills/email-triage/ in the workspace)
+# At the OpenClaw workspace root:
+email-triage/              # Runtime data files (NOT in the git repo)
 ├── accounts.json         # [REQUIRED] Email accounts to triage (see below)
-├── state.json            # [AUTO] Tracks lastRun timestamp + counters
+├── state.json            # [AUTO] Tracks lastRun per account + counters
 ├── seen.json             # [AUTO] Thread deduplication per account, auto-prunes >24h
 ├── whitelist.json        # [USER-EDITABLE] Senders/domains that ALWAYS stay in inbox
 ├── blacklist.json        # [USER-EDITABLE] Senders/domains that ALWAYS go to waiting list
 ├── log.jsonl             # [AUTO] Working log — last 24h. JSONL format.
 ├── audit.jsonl           # [AUTO] Archive log — last 90 days. JSONL format.
 └── learned.db            # [AUTO-CREATED] SQLite DB for pattern learning
+
+# In the skills/ directory (the git checkout):
+skills/email-triage/
+├── SKILL.md              # The skill manifest
+├── INSTALL.md            # This file
+└── README.md             # Quick start guide
 ```
+
+> **Important:** The workspace data directory (`email-triage/`) and the skill directory (`skills/email-triage/`) are *separate*. The git repo only contains `skills/email-triage/`. Data files stay outside the repo to avoid committing PII. Cron jobs reference the SKILL.md as `skills/email-triage/SKILL.md` (from the workspace root), but all file operations in the SKILL.md use paths relative to the workspace root (`email-triage/...`).
 
 ## Step 1: Create accounts.json
 
@@ -54,11 +62,14 @@ Each account object requires:
 }
 ```
 
-**state.json:**
+**state.json** (per-account lastRun — one key per account from accounts.json):
 ```json
 {
   "_help": "State tracker for email triage cron job",
-  "lastRun": null,
+  "lastRun": {
+    "user@gmail.com": null,
+    "user2@gmail.com": null
+  },
   "totalProcessed": 0,
   "totalKeptInInbox": 0,
   "totalSentToWaitingList": 0
@@ -72,7 +83,7 @@ Each account object requires:
 
 ## Step 3: Create learned.db
 
-The SQLite DB is auto-created on first triage run. Schema:
+The SQLite DB is auto-created on the first **feedback sweep** (not the triage run). During triage, if the DB doesn't exist, Step 4d skips learned scoring and falls back to AI evaluation. Schema:
 
 ```sql
 CREATE TABLE patterns (
