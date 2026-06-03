@@ -23,7 +23,7 @@ skills/email-triage/
 └── README.md             # Quick start guide
 ```
 
-> **Important:** The workspace data directory (`email-triage/`) and the skill directory (`skills/email-triage/`) are *separate*. The git repo only contains `skills/email-triage/`. Data files stay outside the repo to avoid committing PII. Cron jobs reference the SKILL.md as `skills/email-triage/SKILL.md` (from the workspace root), but all file operations in the SKILL.md use paths relative to the workspace root (`email-triage/...`).
+> **Important:** The workspace data directory (`email-triage/`) and the skill directory (this repo, typically checked out under `skills/` in an OpenClaw workspace) are *separate*. In this git repository the skill lives at `email-triage/`; in the OpenClaw workspace it is referenced as `skills/email-triage/` from the workspace root. Data files stay outside the repo to avoid committing PII. Cron jobs reference the SKILL.md as `skills/email-triage/SKILL.md` (from the workspace root), but all file operations in the SKILL.md use paths relative to the workspace root (`email-triage/...`).
 
 ## Step 1: Create accounts.json
 
