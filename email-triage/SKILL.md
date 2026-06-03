@@ -83,7 +83,7 @@ From `lastRun` in state, keyed per account:
 gog gmail search "is:unread in:inbox newer_than:<COMPUTED>" --all --json --no-input --account <email>
 ```
 Returns per thread: `id`, `date`, `from`, `subject`, `labels`, `messageCount`. **No body loaded.**
-If zero results for an account, skip that account's processing (don't update state for it).
+If zero results for an account, skip that account's remaining processing (no state change for that account). If results were found and processed, that account's `lastRun` will be updated in Step 6.
 
 ### 4. Process Each Thread (per account)
 
@@ -120,8 +120,9 @@ domain = sys.argv[1]  # bare domain from sender
 row = db.execute('SELECT score FROM domains WHERE domain = ?', (domain,)).fetchone()
 domain_score = row[0] if row else 0.0
 
-# 2. Keyword scores (only query keywords that exist in DB)
-keywords = sys.argv[2:]  # tokenized subject words
+# 2. Keyword scores (args 2 through second-to-last are the keywords)
+# Last arg (sys.argv[-1]) is the essence type, NOT a keyword
+keywords = sys.argv[2:-1]
 if keywords:
     placeholders = ','.join(['?'] * len(keywords))
     rows = db.execute(
@@ -132,8 +133,7 @@ if keywords:
 else:
     keyword_score = 0.0
 
-# 3. Essence type score — infer the email category from subject/sender/labels
-# (See list of known types below; pick the best match for this email)
+# 3. Essence type score
 essence_type = sys.argv[-1]  # inferred type name, e.g. "marketing_promo"
 row = db.execute('SELECT score FROM essence_types WHERE name = ?', (essence_type,)).fetchone()
 essence_score = row[0] if row else 0.0
@@ -207,8 +207,8 @@ gog gmail labels modify <threadId> --add "<waitingLabel>" --remove INBOX --no-in
 ```
 Log: `{"ts":"<ISO8601>","decision":"WAITING","threadId":"<id>","sender":"<email>","subject":"<text>","account":"<email>","reason":"<reason>"}`
 
-### 6. Update State
-Write `email-triage/state.json`: update `lastRun` (ISO UTC), increment counters.
+### 6. Update State (per account)
+Write `email-triage/state.json`: update this account's `lastRun` key to current ISO UTC time, increment global counters. If no emails were processed for this account, leave its `lastRun` unchanged (retains the old search window for next run).
 
 Write `email-triage/seen.json`:
 - Add every thread ID processed this run with current timestamp, keyed by account
