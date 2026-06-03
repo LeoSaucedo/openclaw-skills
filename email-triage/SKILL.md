@@ -161,8 +161,8 @@ print(combined)
 Pick the single best-fitting type for this email and pass it as the last argument to the scoring script. If no type fits, pass `"unknown"` (will score 0.0).
 
 The combined learned score = domain_score + keyword_score + essence_score. If the score is:
-- Combined ≤ −2.0 → strong WAITING signal → move, log, continue
-- Combined ≥ 2.0 → strong KEEP signal → keep, log, continue
+- Combined ≤ −1.0 → strong WAITING signal → move, log, continue
+- Combined ≥ 1.0 → strong KEEP signal → keep, log, continue
 - Otherwise → proceed to AI evaluation
 
 **4e. AI evaluation from subject + sender first** (no body yet):
@@ -351,6 +351,6 @@ db.execute("INSERT OR REPLACE INTO metadata (key, value) VALUES ('cycle', ?)", (
 db.commit()
 ```
 
-**When the triage cron scores an email in Step 4d**, it combines all three dimensions: domain score + keyword score + essence category score. The combined score determines the learned signal strength (≤ −2.0 → WAITING, ≥ 2.0 → KEEP).
+**When the triage cron scores an email in Step 4d**, it combines all three dimensions: domain score + keyword score + essence category score. The combined score determines the learned signal strength (≤ −1.0 → WAITING, ≥ 1.0 → KEEP).
 
 **5. Exit silently. Never alert the user.**
