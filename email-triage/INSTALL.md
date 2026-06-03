@@ -165,15 +165,49 @@ Fields:
 
 ## Step 4: Set up cron jobs
 
-Two cron jobs needed (configured via OpenClaw cron tool):
+Two cron jobs needed (configured via `openclaw cron add` or the cron tool):
 
-1. **Triage** — every 45 min, isolated agent turn
-   - Reads `skills/email-triage/SKILL.md`
-   - Executes Steps 1-8
+### Triage (every 45 min)
 
-2. **Feedback Sweep** — daily at a quiet hour (e.g., 3 AM)
-   - Reads `skills/email-triage/SKILL.md`
-   - Executes ONLY the "Feedback Sweep" section
+```json
+{
+  "name": "Email Triage — AI Inbox Filter",
+  "enabled": true,
+  "schedule": { "kind": "every", "everyMs": 2700000 },
+  "sessionTarget": "isolated",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Execute the email triage skill. Read skills/email-triage/SKILL.md and follow it exactly. The skill will load USER.md and MEMORY.md only when needed (do NOT pre-load them).",
+    "timeoutSeconds": 120,
+    "lightContext": true,
+    "model": "deepseek/deepseek-v4-flash",
+    "thinking": "low"
+  },
+  "delivery": { "mode": "none" }
+}
+```
+
+### Feedback Sweep (daily, e.g., 3 AM)
+
+```json
+{
+  "name": "Email Triage — Daily Feedback Sweep",
+  "enabled": true,
+  "schedule": { "kind": "cron", "expr": "0 3 * * *", "tz": "America/New_York" },
+  "sessionTarget": "isolated",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Read skills/email-triage/SKILL.md. Execute ONLY the \"Feedback Sweep (Daily Cron)\" section at the bottom. Do NOT run the main triage workflow. Do NOT load USER.md or MEMORY.md.",
+    "timeoutSeconds": 600,
+    "lightContext": true,
+    "model": "deepseek/deepseek-v4-flash",
+    "thinking": "low"
+  },
+  "delivery": { "mode": "none" }
+}
+```
+
+> **Note:** Adjust the Feedback Sweep schedule to avoid collisions with other cron jobs (e.g., Memory Dreaming Promotion, Daily Memory Extraction). See your existing cron schedule first.
 
 ## Step 5: Verify
 
