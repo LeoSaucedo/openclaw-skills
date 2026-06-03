@@ -132,13 +132,35 @@ if keywords:
 else:
     keyword_score = 0.0
 
-combined = domain_score + keyword_score
+# 3. Essence type score — infer the email category from subject/sender/labels
+# (See list of known types below; pick the best match for this email)
+essence_type = sys.argv[-1]  # inferred type name, e.g. "marketing_promo"
+row = db.execute('SELECT score FROM essence_types WHERE name = ?', (essence_type,)).fetchone()
+essence_score = row[0] if row else 0.0
+
+combined = domain_score + keyword_score + essence_score
 print(combined)
 ```
 
-**Only query the DB for patterns matching this specific email's keywords** — never load the entire DB into context.
+**Only query the DB for patterns matching this specific email** — never load the entire DB into context.
 
-The combined learned score = domain_score + keyword_score. If the score is:
+**Infer the essence type** from the subject, sender, and labels before scoring. Known types tracked in the DB:
+- `marketing_promo` — promotional emails, sales, discounts
+- `newsletter` — recurring newsletters, digests, roundups
+- `bank_notification` — bank alerts, credit card notices, payment confirmations
+- `travel_alert` — flight updates, booking confirmations, hotel reservations
+- `receipt_confirmation` — purchase receipts, order confirmations
+- `insurance_claim` — claim updates, policy notices
+- `social_media` — notifications from social platforms
+- `personal_message` — direct personal emails from real people
+- `work_related` — work/professional correspondence
+- `automated_digest` — system-generated summaries (Informed Delivery, OneDrive, etc.)
+- `subscription` — subscription management, welcome emails
+- `cold_outreach` — unsolicited sales outreach, cold emails
+
+Pick the single best-fitting type for this email and pass it as the last argument to the scoring script. If no type fits, pass `"unknown"` (will score 0.0).
+
+The combined learned score = domain_score + keyword_score + essence_score. If the score is:
 - Combined ≤ −2.0 → strong WAITING signal → move, log, continue
 - Combined ≥ 2.0 → strong KEEP signal → keep, log, continue
 - Otherwise → proceed to AI evaluation
@@ -329,6 +351,6 @@ db.execute("INSERT OR REPLACE INTO metadata (key, value) VALUES ('cycle', ?)", (
 db.commit()
 ```
 
-**When the triage cron scores an email in Step 4d**, it combines domain + keyword scores. The combined score determines the learned signal strength (≤ −2.0 → WAITING, ≥ 2.0 → KEEP). Essence types are tracked for feedback learning but are not part of the triage scoring — they reinforce domain/keyword weights during feedback sweeps.
+**When the triage cron scores an email in Step 4d**, it combines all three dimensions: domain score + keyword score + essence category score. The combined score determines the learned signal strength (≤ −2.0 → WAITING, ≥ 2.0 → KEEP).
 
 **5. Exit silently. Never alert the user.**
