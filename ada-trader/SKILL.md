@@ -90,6 +90,13 @@ echo "TICKER1,TICKER2,..." | python3 ~/.openclaw/workspace/skills/ada-trader/scr
 ```
 Pick the top-ranked symbol. The scanner calls the Robinhood MCP for live quotes and ranks by momentum (% change from prior close).
 
+### 2.5 Check Recently Sold Blacklist
+Before announcing a pick, check if the top-ranked symbol (or any candidate) was recently sold. Run:
+```bash
+node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call get_equity_orders "{\"account_number\":\"<ACCT>\",\"side\":\"sell\",\"state\":\"filled\",\"created_at_gte\":\"$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)\"}"
+```
+Extract symbols from filled sell orders in the last 24 hours. **Skip any ticker that was sold within the last 24 hours** — move to the next-ranked candidate instead. Post to channel: "Skipping {TICKER} — sold within last 24h." If all candidates are blacklisted, skip trading for the day and post why.
+
 ### 3. Announce the Pick
 Post to channel: symbol, current price, % change, catalyst, target +10%, stop -5%.
 
@@ -105,12 +112,16 @@ First, review the order to surface pre-trade warnings:
 ```bash
 node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call review_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"<CHUNK>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
-Post any alerts from the review output to the channel. Then place the order:
+Post any alerts from the review output to the channel alongside the estimated cost and quote data.
+
+⚠️ **`place_equity_order` executes immediately — there is no Robinhood app confirmation step.** The review step is the only preview; once placed, the order is sent directly.
+
+Then place the order:
 ```bash
 node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call place_equity_order '{"account_number":"<ACCT>","symbol":"<PICK>","side":"buy","type":"market","dollar_amount":"<CHUNK>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
 Replace `<CHUNK>` with the calculated 10% value (e.g. `"50.00"` for a $500 account).
-The user handles final approval in the Robinhood app. Advanced users may skip the review step if they understand the risks.
+Advanced users may skip the review step if they understand the risks — but still get chat confirmation before placing.
 
 ---
 
@@ -139,11 +150,16 @@ First, review the sell order to surface any pre-trade warnings:
 ```bash
 node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call review_equity_order '{"account_number":"<ACCT>","symbol":"<TICKER>","side":"sell","type":"market","quantity":"<ALL SHARES FROM POSITIONS>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
-Post any alerts. Then place:
+Post any alerts alongside the P&L and current quote.
+
+⚠️ **`place_equity_order` executes immediately — there is no Robinhood app confirmation step.** The review step is the only preview; once placed, the order is sent directly.
+
+Then place:
 ```bash
 node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call place_equity_order '{"account_number":"<ACCT>","symbol":"<TICKER>","side":"sell","type":"market","quantity":"<ALL SHARES FROM POSITIONS>","time_in_force":"gfd","market_hours":"regular_hours"}'
 ```
-Use `quantity` (number of shares), NOT `dollar_amount`, for sell orders. The user handles final approval in the Robinhood app. Advanced users may skip the review step if they understand the risks.
+Use `quantity` (number of shares), NOT `dollar_amount`, for sell orders.
+Advanced users may skip the review step if they understand the risks — but still get chat confirmation before placing.
 
 ### 5. Report
 Post to channel: what sold, P&L per position, remaining positions.

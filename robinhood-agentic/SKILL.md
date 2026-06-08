@@ -109,5 +109,6 @@ For the latest tool list, see [Robinhood's official docs](https://robinhood.com/
 
 - **Separate account**: The Agentic account is separate from your main Robinhood account — fund it with what you're comfortable with the agent managing
 - **Tokens stored locally**: OAuth tokens in `.rh-tokens.json` with restrictive 0600 permissions (gitignored, never committed)
-- **You're in control**: Robinhood shows trade previews, sends push notifications, and supports instant shutdown
-- **Each trade reviewed**: By default, the agent shows what it's about to do before placing orders unless you explicitly enable auto-approval
+- **Orders execute immediately**: `place_equity_order` sends the order directly with no app-side confirmation prompt. The only preview is the `review_equity_order` MCP call — use it before placing.
+- **Pre-trade preview only in MCP**: The `review_equity_order` tool is the only pre-trade check (returns quote + alerts); `place_equity_order` skips any app-side prompt entirely.
+- **Instant shutdown**: You can revoke agent access anytime from Robinhood account settings.

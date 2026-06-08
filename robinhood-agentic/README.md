@@ -57,5 +57,5 @@ echo '{"symbol":"AAPL"}' | node rh-client.mjs call get_equity_quotes -
 
 - Separate Agentic account isolates AI trades from your main portfolio
 - OAuth tokens stored with restrictive 0600 permissions, gitignored
-- Trade previews and push notifications on every order
+- Review before placing via `review_equity_order` MCP tool (no app-side confirmation prompt)
 - Spending caps and instant shutdown available in Robinhood settings

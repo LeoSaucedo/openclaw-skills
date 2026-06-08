@@ -57,14 +57,36 @@ def get_quotes(tickers):
     except json.JSONDecodeError:
         return {"error": f"MCP returned non-JSON: {raw[:200]}"}
 
-    # Handle MCP content envelope
+    # Response is already unwrapped by rh-client.mjs
+    # Structure: {data: {results: [{quote: {...}}, ...]}}
+    if isinstance(data, dict) and "data" in data:
+        results_list = data["data"].get("results", [])
+        by_sym = {}
+        for entry in results_list:
+            q = entry.get("quote", {})
+            sym = q.get("symbol")
+            if sym:
+                by_sym[sym] = q
+        return by_sym
+    
+    # Fallback: try MCP content envelope
     if isinstance(data, dict) and "content" in data:
         for c in data["content"]:
             if c.get("type") == "text":
                 try:
-                    return json.loads(c["text"])
+                    inner = json.loads(c["text"])
                 except json.JSONDecodeError:
                     return {"error": "MCP content envelope contains non-JSON text"}
+                if isinstance(inner, dict) and "data" in inner:
+                    results_list = inner["data"].get("results", [])
+                    by_sym = {}
+                    for entry in results_list:
+                        q = entry.get("quote", {})
+                        sym = q.get("symbol")
+                        if sym:
+                            by_sym[sym] = q
+                    return by_sym
+                return inner
     return data
 
 
@@ -79,7 +101,7 @@ def rank(tickers):
         if not isinstance(q, dict):
             continue
         last = safe_float(q.get("last_trade_price"))
-        prior = safe_float(q.get("prior_close"))
+        prior = safe_float(q.get("previous_close"))
         if last <= 0 or prior <= 0 or abs(last - prior) / prior < 0.005:
             continue  # Skip flat tickers (<0.5% absolute move)
 
