@@ -93,7 +93,7 @@ Pick the top-ranked symbol. The scanner calls the Robinhood MCP for live quotes 
 ### 2.5 Check Recently Sold Blacklist
 Before announcing a pick, check if the top-ranked symbol (or any candidate) was recently sold. Run:
 ```bash
-node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call get_equity_orders '{"account_number":"<ACCT>","side":"sell","state":"filled","created_at_gte":"$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"}'
+node ~/.openclaw/workspace/skills/robinhood-agentic/rh-client.mjs call get_equity_orders "{\"account_number\":\"<ACCT>\",\"side\":\"sell\",\"state\":\"filled\",\"created_at_gte\":\"$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)\"}"
 ```
 Extract symbols from filled sell orders in the last 24 hours. **Skip any ticker that was sold within the last 24 hours** — move to the next-ranked candidate instead. Post to channel: "Skipping {TICKER} — sold within last 24h." If all candidates are blacklisted, skip trading for the day and post why.
 
