@@ -208,24 +208,35 @@ gog gmail labels modify <threadId> --add "<waitingLabel>" --remove INBOX --no-in
 Log: `{"ts":"<ISO8601>","decision":"WAITING","threadId":"<id>","sender":"<email>","subject":"<text>","account":"<email>","reason":"<reason>"}`
 
 ### 6. Update State (per account)
-Write `email-triage/state.json`: update this account's `lastRun` key to current ISO UTC time — specifically `state.lastRun[thisAccountEmail] = "<ISO UTC>"`. Increment global counters. If no emails were processed for this account, leave its `lastRun` unchanged (retains the old search window for next run).
+Use the `write` tool (NOT `edit`) to write files. Read the current file first, modify in memory, then write the complete content back.
 
-Write `email-triage/seen.json`:
-- Add every thread ID processed this run with current timestamp, keyed by account
+**state.json:** Update this account's `lastRun` key to current ISO UTC time — specifically `state.lastRun[thisAccountEmail] = "<ISO UTC>"`. Increment global counters. If no emails were processed for this account, leave its `lastRun` unchanged (retains the old search window for next run).
+
+**seen.json:**
+- Read current content, add every thread ID processed this run with current timestamp, keyed by account
 - Prune entries older than 24 hours (KEEP leaves threads unread, so keep seen entries long enough to avoid reprocessing)
+- Use `write` to rewrite the complete file
 - Structure: `{"<account>": {"<threadId>": {"ts": "2026-01-01T00:00:00Z"}}}`
 
 ### 7. Log Decisions
-Append one JSON line per decision to END of `email-triage/log.jsonl` (America/New_York timezone, newest at bottom):
+Use `exec` with shell redirect to append, NOT the `edit` tool (which fails on JSONL because line content is always unique).
+
+Read the current file, build the complete content with new lines appended, and write it back using the `write` tool. Or use `exec` with:
+```bash
+echo '{"ts":"...","decision":"KEPT",...}' >> email-triage/log.jsonl
+```
+
+Append one JSON line per decision (America/New_York timezone, newest at bottom):
 ```jsonl
 {"ts":"2026-06-01T12:42:00-04:00","decision":"WAITING","threadId":"19e83f7cb645a38b","sender":"donotreply@example.com","subject":"Newsletter","account":"user@example.com","reason":"newsletter, AI eval WAITING"}
 ```
 DECISION ∈ {BLACKLIST, WHITELIST, KEPT, WAITING}
 
 ### 8. Archive
-- Move log.jsonl entries older than 24h to END of audit.jsonl
-- Overwrite log.jsonl with trimmed content (last 24h only)
-- Prune audit.jsonl to last 90 days
+Use `exec` commands or the `write` tool (NOT `edit`) for all file operations:
+- Use `exec` with python3 to read log.jsonl, filter entries older than 24h, append them to audit.jsonl, and overwrite log.jsonl with only entries from the last 24h
+- Prune audit.jsonl entries older than 90 days using `exec` with python3
+- Example approach: `python3 -c "..."` that reads both files, filters dates, and writes the results
 
 ---
 
@@ -239,6 +250,7 @@ DECISION ∈ {BLACKLIST, WHITELIST, KEPT, WAITING}
 - **Do NOT load USER.md/MEMORY.md unless body fetch is needed** (step 4e ambiguous path).
 - **Never load the entire learned.db.** Query it per-email with specific keywords only.
 - **Process ALL accounts** from accounts.json.
+- **Never use the `edit` tool on JSON or JSONL files.** Use `write` for complete rewrites and `exec` with shell `>>` for appending. The `edit` tool requires exact unique text matching, which fails on JSONL files where every line has unique timestamps.
 
 ---
 
