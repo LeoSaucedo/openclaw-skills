@@ -1,6 +1,54 @@
 # SoundCloud API Skill
 
+[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Published-22c55e?style=flat)](https://clawhub.ai/leosaucedo/soundcloud)
+
 Search, analyze, and manage SoundCloud tracks, playlists, and users — all from the command line.
+
+## Onboarding
+
+### 1. Create a SoundCloud App
+
+1. Go to <https://soundcloud.com/you/apps> and click **Register a new application**
+2. Give it a name (e.g. "ClawHub SoundCloud Skill")
+3. Set the **Redirect URI** to `http://localhost:8080/callback`
+4. Copy your **Client ID** and **Client Secret**
+
+### 2. Set Environment Variables
+
+```bash
+export SOUNDCLOUD_CLIENT_ID="your_client_id"
+export SOUNDCLOUD_CLIENT_SECRET="your_client_secret"
+```
+
+Add these to your shell profile (`~/.bashrc`, `~/.zshrc`) to persist across sessions.
+
+### 3. Verify Setup
+
+```bash
+./scripts/search_tracks.sh "test" --limit 1
+```
+
+If this returns results, your app token is working. No manual token management needed — the skill auto-acquires and caches tokens.
+
+### 4. (Optional) Enable Write Operations
+
+For playlists, likes, and follows, run the OAuth helper:
+
+```bash
+./scripts/auth_soundcloud.sh
+```
+
+This opens a browser for you to authorize the app, then saves a user token for write operations.
+
+### Why Token Caching?
+
+SoundCloud deprecated the old `?client_id=` query parameter — all API calls now require `Authorization: Bearer <token>` headers. The skill automatically:
+
+- Acquires an **app token** (OAuth2 `client_credentials` grant) on first use
+- Caches it at `~/.cache/soundcloud/` with `chmod 600` permissions
+- Refreshes it when it expires (tokens last ~1 hour)
+
+This avoids hitting the token endpoint on every call and keeps your API usage efficient. The cache is local-only, encrypted at rest on disk, and never sent anywhere.
 
 ## Features
 
@@ -153,7 +201,3 @@ Full endpoint documentation is available in `references/api_endpoints.md`. Key e
 | 429 | Rate Limited | Implement backoff |
 
 All scripts include automatic status code checking and informative error messages.
-
-## License
-
-MIT — see `LICENSE` for details.
