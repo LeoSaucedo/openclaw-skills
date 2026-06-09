@@ -1,5 +1,7 @@
 # openclaw-skills
 
+[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Publisher-6366f1?style=flat)](https://clawhub.ai/leosaucedo)
+
 Collection of OpenClaw skills for API-powered assistant capabilities.
 
 ## Skills
