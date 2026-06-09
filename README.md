@@ -1,20 +1,22 @@
 # openclaw-skills
 
+[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Publisher-6366f1?style=flat)](https://clawhub.ai/leosaucedo)
+
 Collection of OpenClaw skills for API-powered assistant capabilities.
 
 ## Skills
 
-| Skill | Purpose | Directory |
-|---|---|---|
-| deepseek-balance | Check DeepSeek API balance and usage | `skills/deepseek-balance` |
-| email-triage | Gmail inbox triage with self-learning SQLite pattern database | `skills/email-triage` |
-| engram-memory | Graph-based long-term memory and relationship tracing | `skills/engram-memory` |
-| google-maps-directions | Drive time, distance, and route lookups via Google Maps | `skills/google-maps-directions` |
-| lastfm | Last.fm profile, scrobble, chart, and discovery queries | `skills/lastfm` |
-| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `skills/robinhood-agentic` |
-| soundcloud | Search tracks, user info, and playlist operations on SoundCloud | `skills/soundcloud` |
-| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress | `skills/wanikani` |
-| wolfram-alpha | Computational queries via Wolfram Alpha LLM API | `skills/wolfram-alpha` |
+| Skill | Purpose |
+|---|---|
+| deepseek-balance | Check DeepSeek API balance and usage |
+| email-triage | Gmail inbox triage with self-learning SQLite pattern database |
+| engram-memory | Graph-based long-term memory and relationship tracing |
+| google-maps-directions | Drive time, distance, and route lookups via Google Maps |
+| lastfm | Last.fm profile, scrobble, chart, and discovery queries |
+| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution |
+| soundcloud | Search tracks, user info, and playlist operations on SoundCloud |
+| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress |
+| wolfram-alpha | Computational queries via Wolfram Alpha LLM API |
 
 ## Repository Structure
 
