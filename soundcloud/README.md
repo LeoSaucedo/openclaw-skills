@@ -1,6 +1,6 @@
 # SoundCloud API Skill
 
-[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Published-22c55e?style=flat)](https://clawhub.ai/leosaucedo/soundcloud)
+[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Published-22c55e?style=flat)](https://clawhub.ai/leosaucedo/soundcloud) [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fclawhub.ai%2Fapi%2Fv1%2Fskills%2Fsoundcloud&query=%24.skill.stats.downloads&label=downloads&color=blue&style=flat)](https://clawhub.ai/leosaucedo/soundcloud)
 
 Search, analyze, and manage SoundCloud tracks, playlists, and users — all from the command line.
 

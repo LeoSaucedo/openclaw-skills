@@ -6,17 +6,17 @@ Collection of OpenClaw skills for API-powered assistant capabilities.
 
 ## Skills
 
-| Skill | Purpose |
-|---|---|
-| deepseek-balance | Check DeepSeek API balance and usage |
-| email-triage | Gmail inbox triage with self-learning SQLite pattern database |
-| engram-memory | Graph-based long-term memory and relationship tracing |
-| google-maps-directions | Drive time, distance, and route lookups via Google Maps |
-| lastfm | Last.fm profile, scrobble, chart, and discovery queries |
-| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution |
-| soundcloud | Search tracks, user info, and playlist operations on SoundCloud |
-| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress |
-| wolfram-alpha | Computational queries via Wolfram Alpha LLM API |
+| Skill | Purpose | Directory | Downloads |
+|---|---|---|---|
+| deepseek-balance | Check DeepSeek API balance and usage | `skills/deepseek-balance` | — |
+| email-triage | Gmail inbox triage with self-learning SQLite pattern database | `skills/email-triage` | — |
+| engram-memory | Graph-based long-term memory and relationship tracing | `skills/engram-memory` | — |
+| google-maps-directions | Drive time, distance, and route lookups via Google Maps | `skills/google-maps-directions` | — |
+| lastfm | Last.fm profile, scrobble, chart, and discovery queries | `skills/lastfm` | — |
+| robinhood-agentic | MCP client for Robinhood Agentic Trading — portfolio, analysis, and trade execution | `skills/robinhood-agentic` | [![downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fclawhub.ai%2Fapi%2Fv1%2Fskills%2Frobinhood-agentic&query=%24.skill.stats.downloads&label=%20&color=blue&style=flat-square)](https://clawhub.ai/leosaucedo/robinhood-agentic) |
+| soundcloud | Search tracks, user info, and playlist operations on SoundCloud | `skills/soundcloud` | [![downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fclawhub.ai%2Fapi%2Fv1%2Fskills%2Fsoundcloud&query=%24.skill.stats.downloads&label=%20&color=blue&style=flat-square)](https://clawhub.ai/leosaucedo/soundcloud) |
+| wanikani | WaniKani Japanese study — kanji, vocabulary, review and SRS progress | `skills/wanikani` | — |
+| wolfram-alpha | Computational queries via Wolfram Alpha LLM API | `skills/wolfram-alpha` | — |
 
 ## Repository Structure
 
