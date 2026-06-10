@@ -1,0 +1,63 @@
+name: Update ClawHub download badge
+
+concurrency:
+  group: clawhub-badge
+  cancel-in-progress: false
+
+on:
+  schedule:
+    - cron: "0 10 * * *"   # Daily at ~6 AM ET (~10:00 UTC during EDT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch download counts from ClawHub
+        run: |
+          set -euo pipefail
+
+          fetch_dl() {
+            local slug="$1"
+            local response
+            response=$(curl -sf "https://clawhub.ai/api/v1/skills/$slug")
+            echo "$response" | jq -e '.skill.stats.downloads | numbers' 2>/dev/null || {
+              echo "ERROR: failed to extract downloads for $slug" >&2
+              exit 1
+            }
+          }
+
+          ROBINHOOD_DL=$(fetch_dl robinhood-agentic)
+          SOUNDCLOUD_DL=$(fetch_dl soundcloud)
+
+          TOTAL=$((ROBINHOOD_DL + SOUNDCLOUD_DL))
+
+          echo "robinhood-agentic: $ROBINHOOD_DL"
+          echo "soundcloud: $SOUNDCLOUD_DL"
+          echo "total: $TOTAL"
+
+          # Write shields.io endpoint badge JSON
+          mkdir -p badges
+          jq -n \
+            --argjson msg "$TOTAL" \
+            '{schemaVersion: 1, label: "total ClawHub downloads", message: ($msg | tostring), color: "blue"}' \
+            > badges/total-downloads.json
+
+          cat badges/total-downloads.json
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add badges/total-downloads.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update ClawHub total download badge"
+            git push
+          else
+            echo "No change — badge already up to date"
+          fi
