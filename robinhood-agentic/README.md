@@ -1,5 +1,7 @@
 # Robinhood Agentic Trading
 
+[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Published-22c55e?style=flat)](https://clawhub.ai/leosaucedo/robinhood-agentic) [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fclawhub.ai%2Fapi%2Fv1%2Fskills%2Frobinhood-agentic&query=%24.skill.stats.downloads&label=downloads&color=blue&style=flat)](https://clawhub.ai/leosaucedo/robinhood-agentic)
+
 MCP client for [Robinhood Agentic Trading](https://robinhood.com/us/en/support/articles/agentic-trading-overview/) — connect an AI agent to a dedicated Robinhood account for automated investing.
 
 ## Install
