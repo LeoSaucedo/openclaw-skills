@@ -1,9 +1,13 @@
 name: Update ClawHub download badge
 
+concurrency:
+  group: clawhub-badge
+  cancel-in-progress: false
+
 on:
   schedule:
-    - cron: "0 6 * * *"   # Daily at 6 AM ET
-  workflow_dispatch:       # Allow manual trigger
+    - cron: "0 10 * * *"   # Daily at ~6 AM ET (~10:00 UTC during EDT)
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,13 +20,20 @@ jobs:
 
       - name: Fetch download counts from ClawHub
         run: |
-          # Fetch stats for both skills
-          ROBINHOOD=$(curl -s https://clawhub.ai/api/v1/skills/robinhood-agentic)
-          SOUNDCLOUD=$(curl -s https://clawhub.ai/api/v1/skills/soundcloud)
+          set -euo pipefail
 
-          # Extract download counts using jq
-          ROBINHOOD_DL=$(echo "$ROBINHOOD" | jq '.skill.stats.downloads // 0')
-          SOUNDCLOUD_DL=$(echo "$SOUNDCLOUD" | jq '.skill.stats.downloads // 0')
+          fetch_dl() {
+            local slug="$1"
+            local response
+            response=$(curl -sf "https://clawhub.ai/api/v1/skills/$slug")
+            echo "$response" | jq -e '.skill.stats.downloads | numbers' 2>/dev/null || {
+              echo "ERROR: failed to extract downloads for $slug" >&2
+              exit 1
+            }
+          }
+
+          ROBINHOOD_DL=$(fetch_dl robinhood-agentic)
+          SOUNDCLOUD_DL=$(fetch_dl soundcloud)
 
           TOTAL=$((ROBINHOOD_DL + SOUNDCLOUD_DL))
 
@@ -33,8 +44,8 @@ jobs:
           # Write shields.io endpoint badge JSON
           mkdir -p badges
           jq -n \
-            --arg msg "$TOTAL" \
-            '{schemaVersion: 1, label: "total ClawHub downloads", message: $msg, color: "blue"}' \
+            --argjson msg "$TOTAL" \
+            '{schemaVersion: 1, label: "total ClawHub downloads", message: ($msg | tostring), color: "blue"}' \
             > badges/total-downloads.json
 
           cat badges/total-downloads.json
