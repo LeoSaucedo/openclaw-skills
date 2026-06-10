@@ -1,6 +1,6 @@
 # openclaw-skills
 
-[![ClawHub](https://img.shields.io/badge/%F0%9F%A6%9E_ClawHub-Publisher-6366f1?style=flat)](https://clawhub.ai/user/leosaucedo) [![total ClawHub downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLeoSaucedo%2Fopenclaw-skills%2Fmaster%2Fbadges%2Ftotal-downloads.json&style=flat)](https://clawhub.ai/user/leosaucedo)
+[![🦞 ClawHub](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLeoSaucedo%2Fopenclaw-skills%2Fmaster%2Fbadges%2Ftotal-downloads.json&style=flat)](https://clawhub.ai/user/leosaucedo)
 
 Collection of OpenClaw skills for API-powered assistant capabilities.
 
