@@ -45,7 +45,7 @@ jobs:
           mkdir -p badges
           jq -n \
             --argjson msg "$TOTAL" \
-            '{schemaVersion: 1, label: "total ClawHub downloads", message: ($msg | tostring), color: "blue"}' \
+            '{schemaVersion: 1, label: "🦞 ClawHub", message: ($msg | tostring) + " downloads", color: "blue"}' \
             > badges/total-downloads.json
 
           cat badges/total-downloads.json
